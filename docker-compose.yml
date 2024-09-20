@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  myDB:
+    image: mysql:8.0
+    container_name: soa-database
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=adminadmin
+      - MYSQL_DATABASE=course-db
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=adminadmin
+    volumes:
+      - ./mysql:/var/lib/mysql

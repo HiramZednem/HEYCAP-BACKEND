@@ -1,0 +1,5 @@
+node_modules
+/dist
+mysql
+.vercel
+package-lock.json

@@ -1,0 +1,1 @@
+export { gymService } from './gym.service';

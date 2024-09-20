@@ -1,0 +1,1 @@
+export { gymController } from './gym.controller';
