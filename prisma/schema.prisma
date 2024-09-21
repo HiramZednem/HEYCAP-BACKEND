@@ -31,15 +31,23 @@ model places {
 }
 
 model users {
-  user_id    Int        @id @default(autoincrement())
-  uuid       String     @unique @default(dbgenerated("gen_random_uuid()")) @db.VarChar 
-  name       String     @db.VarChar(50)
-  last_name  String     @db.VarChar(50)
-  nickname   String     @unique @db.VarChar(50)
-  email      String     @unique @db.VarChar
-  phone      String     @db.VarChar(10)
-  avatar     String?    @db.VarChar
-  created_at DateTime?  @default(now()) @db.Timestamp(6)
-  dislikes   dislikes[]
-  likes      likes[]
+  user_id     Int          @id @default(autoincrement())
+  uuid        String       @unique @default("gen_random_uuid()") @db.VarChar
+  name        String       @db.VarChar(50)
+  last_name   String       @db.VarChar(50)
+  nickname    String       @unique @db.VarChar(50)
+  email       String       @unique @db.VarChar
+  phone       String       @db.VarChar(10)
+  avatar      String?      @db.VarChar
+  created_at  DateTime?    @default(dbgenerated("'2024-09-21 21:18:21.768089'::timestamp without time zone")) @db.Timestamp(6)
+  dislikes    dislikes[]
+  itineraries itineraries?
+  likes       likes[]
+}
+
+model itineraries {
+  itinerarie_id Int     @id @default(autoincrement())
+  user_id       Int?
+  name          String? @db.VarChar
+  users         users   @relation(fields: [itinerarie_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
 }
