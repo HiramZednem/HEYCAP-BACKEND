@@ -1,1 +1,1 @@
-export { gymService } from './gym.service';
+export { userService } from './user.service';

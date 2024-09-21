@@ -2,15 +2,14 @@ version: '3'
 
 services:
   myDB:
-    image: mysql:8.0
+    image: postgres:15.3
     container_name: soa-database
     restart: always
     ports:
-      - 3306:3306
+      - 5432:5432
     environment:
-      - MYSQL_ROOT_PASSWORD=adminadmin
-      - MYSQL_DATABASE=course-db
-      - MYSQL_USER=admin
-      - MYSQL_PASSWORD=adminadmin
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=adminadmin
+      - POSTGRES_DB=heycap
     volumes:
-      - ./mysql:/var/lib/mysql
+      - ./postgres:/var/lib/postgresql/data

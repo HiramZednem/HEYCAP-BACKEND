@@ -3,6 +3,43 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model dislikes {
+  dislike_id Int     @id @default(autoincrement())
+  user_id    Int?
+  place_id   Int?
+  places     places? @relation(fields: [place_id], references: [place_id], onDelete: NoAction, onUpdate: NoAction)
+  users      users?  @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model likes {
+  like_id  Int     @id @default(autoincrement())
+  user_id  Int?
+  place_id Int?
+  places   places? @relation(fields: [place_id], references: [place_id], onDelete: NoAction, onUpdate: NoAction)
+  users    users?  @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model places {
+  place_id Int        @id @default(autoincrement())
+  name     String     @db.VarChar
+  dislikes dislikes[]
+  likes    likes[]
+}
+
+model users {
+  user_id    Int        @id @default(autoincrement())
+  uuid       String     @unique @default(dbgenerated("gen_random_uuid()")) @db.VarChar 
+  name       String     @db.VarChar(50)
+  last_name  String     @db.VarChar(50)
+  nickname   String     @unique @db.VarChar(50)
+  email      String     @unique @db.VarChar
+  phone      String     @db.VarChar(10)
+  avatar     String?    @db.VarChar
+  created_at DateTime?  @default(now()) @db.Timestamp(6)
+  dislikes   dislikes[]
+  likes      likes[]
 }

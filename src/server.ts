@@ -28,11 +28,11 @@ export class Server {
   routes(){
     this.app.get('/', (req, res)=>{
       res.status(200).json({
-        name:'API GYM2024'
+        name:'API'
       })
     });
 
-    this.app.use('/api/gym', routes.GymRoutes);
+    this.app.use('/api/users', routes.usersRoutes);
 
   }
 

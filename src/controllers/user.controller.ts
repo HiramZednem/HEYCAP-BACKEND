@@ -1,44 +1,44 @@
 import { Request, Response } from 'express';
-import { gymService } from '../services/gym.service';
+import { userService } from '../services';
 
 
-export const gymController = {
+export const userController = {
     getAll: async (req: Request, res: Response) => {
         try {
-            const gyms = await gymService.getAll();
-            return res.status(200).json(gyms);
+            const users = await userService.getAll();
+            return res.status(200).json(users);
         } catch (e) {
             res.status(500).json({ error: (e as Error).message });
         }
     },
     getById: async (req: Request, res: Response) => {
         try {
-            const gym = await gymService.getById(parseInt(req.params.id));
-            return res.status(201).json(gym);
+            const user = await userService.getById(req.params.id);
+            return res.status(201).json(user);
         } catch (e) {
             res.status(500).json({ error: (e as Error).message });
         }
     },
     create: async (req: Request, res: Response) => {
         try {
-            const gym = await gymService.create(req.body);
-            return res.status(200).json(gym);
+            const user = await userService.create(req.body);
+            return res.status(200).json(user);
         } catch (e) {
             res.status(500).json({ error: (e as Error).message });
         }
     },
     update: async (req: Request, res: Response) => {
         try {
-            const gym = await gymService.update(parseInt(req.params.id), req.body);
-            return res.status(200).json(gym);
+            const user = await userService.update(req.params.id, req.body);
+            return res.status(200).json(user);
         } catch (e) {
             res.status(500).json({ error: (e as Error).message });
         }
     },
     delete: async (req: Request, res: Response) => {
         try {
-            const gym = await gymService.delete(parseInt(req.params.id));
-            return res.status(200).json(gym);
+            const user = await userService.delete(req.params.id);
+            return res.status(200).json(user);
         } catch (e) {
             res.status(500).json({ error: (e as Error).message });
         }
