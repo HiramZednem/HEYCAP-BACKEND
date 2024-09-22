@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1726988873251" clover="3.2.0">
+  <project timestamp="1726988873251" name="All files">
+    <metrics statements="14" coveredstatements="12" conditionals="0" coveredconditionals="0" methods="10" coveredmethods="8" elements="24" coveredelements="20" complexity="0" loc="14" ncloc="14" packages="2" files="2" classes="2"/>
+    <package name="db">
+      <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <file name="db.ts" path="E:\Carpeta a respaldar\Estudios\9no Cuatri\Arquitectura Orientada a Servicios\C1\Back-end\HEYCAP-BACKEND\src\db\db.ts">
+        <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="services">
+      <metrics statements="12" coveredstatements="10" conditionals="0" coveredconditionals="0" methods="10" coveredmethods="8"/>
+      <file name="user.service.ts" path="E:\Carpeta a respaldar\Estudios\9no Cuatri\Arquitectura Orientada a Servicios\C1\Back-end\HEYCAP-BACKEND\src\services\user.service.ts">
+        <metrics statements="12" coveredstatements="10" conditionals="0" coveredconditionals="0" methods="10" coveredmethods="8"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="16" count="0" type="stmt"/>
+        <line num="17" count="0" type="stmt"/>
+        <line num="22" count="1" type="stmt"/>
+        <line num="23" count="1" type="stmt"/>
+        <line num="31" count="1" type="stmt"/>
+        <line num="32" count="1" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>

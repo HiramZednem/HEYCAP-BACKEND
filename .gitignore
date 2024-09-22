@@ -4,3 +4,5 @@ mysql
 postgres
 .vercel
 package-lock.json
+.env
+README.md

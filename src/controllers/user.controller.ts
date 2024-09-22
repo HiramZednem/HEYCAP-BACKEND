@@ -13,7 +13,7 @@ export const userController = {
     },
     getById: async (req: Request, res: Response) => {
         try {
-            const user = await userService.getById(req.params.id);
+            const user = await userService.getById(Number(req.params.id));
             return res.status(200).json(user);
         } catch (e) {
             res.status(500).json({ error: (e as Error).message });
@@ -29,7 +29,7 @@ export const userController = {
     },
     update: async (req: Request, res: Response) => {
         try {
-            const user = await userService.update(req.params.id, req.body);
+            const user = await userService.update(Number(req.params.id), req.body);
             return res.status(200).json(user);
         } catch (e) {
             res.status(500).json({ error: (e as Error).message });
@@ -37,7 +37,7 @@ export const userController = {
     },
     delete: async (req: Request, res: Response) => {
         try {
-            const user = await userService.delete(req.params.id);
+            const user = await userService.delete(Number(req.params.id));
             return res.status(200).json(user);
         } catch (e) {
             res.status(500).json({ error: (e as Error).message });

@@ -1,15 +1,14 @@
 import { prisma } from '../db/db';
 
-
 export const userService = {
     getAll: async () => {
             return await prisma.users.findMany()
     },
 
-    getById: async (uuid: string) => {
+    getById: async (id: number) => {
         return await prisma.users.findUnique({
             where: {
-                uuid: uuid
+                user_id: id
             }
         })
     },
@@ -20,19 +19,19 @@ export const userService = {
         })
     },
 
-    update: async (uuid: string, data: any) => {
+    update: async (id: number, data: any) => {
         return await prisma.users.update({
             where: {
-                uuid: uuid
+                user_id: id
             },
             data: data
         })
     },
     
-    delete: async (uuid: string) => {
+    delete: async (id: number) => {
         return await prisma.users.delete({
             where: {
-                uuid: uuid
+                user_id: id
             }
         })
     }
