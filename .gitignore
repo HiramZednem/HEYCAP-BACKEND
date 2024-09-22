@@ -3,6 +3,5 @@ node_modules
 mysql
 postgres
 .vercel
-package-lock.json
+# package-lock.json
 .env
-README.md
