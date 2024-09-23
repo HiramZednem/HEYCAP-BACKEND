@@ -34,5 +34,13 @@ export const userService = {
                 user_id: id
             }
         })
+    },
+
+    getUserByEmail: async (email: string) => {
+        return await prisma.users.findFirst({
+            where: {
+                email: email
+            }
+        })
     }
 };
