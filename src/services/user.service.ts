@@ -5,10 +5,10 @@ export const userService = {
             return await prisma.users.findMany()
     },
 
-    getById: async (id: number) => {
+    getById: async (uuid: string) => {
         return await prisma.users.findUnique({
             where: {
-                user_id: id
+                uuid: uuid
             }
         })
     },
@@ -19,19 +19,19 @@ export const userService = {
         })
     },
 
-    update: async (id: number, data: any) => {
+    update: async (uuid: string, data: any) => {
         return await prisma.users.update({
             where: {
-                user_id: id
+                uuid: uuid
             },
             data: data
         })
     },
     
-    delete: async (id: number) => {
+    delete: async (id: string) => {
         return await prisma.users.delete({
             where: {
-                user_id: id
+                uuid: id
             }
         })
     },
@@ -42,5 +42,5 @@ export const userService = {
                 email: email
             }
         })
-    }
+    },
 };
