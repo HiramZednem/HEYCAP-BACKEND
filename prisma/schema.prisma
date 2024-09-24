@@ -25,33 +25,35 @@ model likes {
 
 model places {
   place_id Int        @id @default(autoincrement())
+  uuid     String     @unique @default(dbgenerated("gen_random_uuid()")) @db.VarChar
   name     String     @db.VarChar
   dislikes dislikes[]
   likes    likes[]
 }
 
 model users {
-  user_id         Int          @id @default(autoincrement())
-  uuid            String       @unique @default(dbgenerated("gen_random_uuid()")) @db.VarChar
-  name            String       @db.VarChar(50)
-  last_name       String       @db.VarChar(50)
-  nickname        String       @unique @db.VarChar(50)
-  email           String       @unique @db.VarChar
-  password        String       @db.VarChar
-  phone           String       @db.VarChar(10)
-  phoneVerified   Boolean?     @default(false)
-  avatar          String?      @db.VarChar
-  code            String?      @db.VarChar(4)
-  code_created_at DateTime?    @default(now()) @db.Timestamp(6)
-  created_at      DateTime?    @default(now()) @db.Timestamp(6)
+  user_id         Int           @id @default(autoincrement())
+  uuid            String        @unique @default(dbgenerated("gen_random_uuid()")) @db.VarChar
+  name            String        @db.VarChar(50)
+  last_name       String        @db.VarChar(50)
+  nickname        String        @unique @db.VarChar(50)
+  email           String        @unique @db.VarChar
+  password        String        @db.VarChar
+  phone           String        @db.VarChar(10)
+  phoneVerified   Boolean?      @default(false)
+  avatar          String?       @db.VarChar
+  code            String?       @db.VarChar(4)
+  code_created_at DateTime?     @default(now()) @db.Timestamp(6)
+  created_at      DateTime?     @default(now()) @db.Timestamp(6)
   dislikes        dislikes[]
-  itineraries     itineraries?
+  itineraries     itineraries[]
   likes           likes[]
 }
 
 model itineraries {
   itinerarie_id Int     @id @default(autoincrement())
+  uuid          String  @unique @default(dbgenerated("gen_random_uuid()")) @db.VarChar
   user_id       Int?
   name          String? @db.VarChar
-  users         users   @relation(fields: [itinerarie_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users         users?  @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
 }
