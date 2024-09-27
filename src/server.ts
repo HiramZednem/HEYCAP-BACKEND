@@ -35,6 +35,7 @@ export class Server {
 
     this.app.use('/api/users', routes.usersRoutes);
     this.app.use('/api/itineraries', accessTokenAuth, routes.itineraryRoutes);
+    this.app.use('/api/mercadopago', routes.paymentRoutes);
 
   }
 
