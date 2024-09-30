@@ -20,6 +20,18 @@ export class PlaceController {
         }
     }
 
+    public async getPlacesInOrder(req: Request, res: Response) {
+        try {
+            const { per_page=9, page=1 } = req.query
+            const result = await this.placeServices.getPlacesByPage(parseInt(per_page as string), parseInt(page as string));
+            const response = new BaseResponse(result, true, 'Places found');
+            res.status(200).json(response.toResponseEntity());
+        } catch (error) {
+            const response = new BaseResponse({}, false, 'Error getting places per page');
+            res.status(500).json(response.toResponseEntity());
+        }
+    }
+
     public async getPlaceByiD(req: Request, res: Response) {
         try {
             const { id_place } = req.params;
