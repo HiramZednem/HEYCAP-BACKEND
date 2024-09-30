@@ -9,18 +9,18 @@ datasource db {
 
 model dislikes {
   dislike_id Int     @id @default(autoincrement())
-  user_id    Int?
-  place_id   Int?
-  places     places? @relation(fields: [place_id], references: [place_id], onDelete: NoAction, onUpdate: NoAction)
-  users      users?  @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  user_id    Int
+  place_id   Int
+  place     places @relation(fields: [place_id], references: [place_id], onDelete: NoAction, onUpdate: NoAction)
+  user      users  @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model likes {
   like_id  Int     @id @default(autoincrement())
-  user_id  Int?
-  place_id Int?
-  places   places? @relation(fields: [place_id], references: [place_id], onDelete: NoAction, onUpdate: NoAction)
-  users    users?  @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  user_id  Int
+  place_id Int
+  place   places @relation(fields: [place_id], references: [place_id], onDelete: NoAction, onUpdate: NoAction)
+  user    users  @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model places {
