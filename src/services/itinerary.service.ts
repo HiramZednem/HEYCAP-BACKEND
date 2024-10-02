@@ -1,12 +1,16 @@
 import { prisma } from '../db/db';
 
-export const userService = {
-    getAll: async () => {
-            return await prisma.users.findMany()
+export const itineraryService = {
+    getAll: async (user_id: number) => {
+            return await prisma.itineraries.findMany({
+                where: {
+                    user_id: user_id
+                }
+            })
     },
 
     getById: async (uuid: string) => {
-        return await prisma.users.findUnique({
+        return await prisma.itineraries.findUnique({
             where: {
                 uuid: uuid
             }
@@ -14,13 +18,13 @@ export const userService = {
     },
 
     create: async (data: any) => {
-        return await prisma.users.create({
+        return await prisma.itineraries.create({
             data: data
         })
     },
 
     update: async (uuid: string, data: any) => {
-        return await prisma.users.update({
+        return await prisma.itineraries.update({
             where: {
                 uuid: uuid
             },
@@ -29,17 +33,9 @@ export const userService = {
     },
     
     delete: async (id: string) => {
-        return await prisma.users.delete({
+        return await prisma.itineraries.delete({
             where: {
                 uuid: id
-            }
-        })
-    },
-
-    getUserByEmail: async (email: string) => {
-        return await prisma.users.findFirst({
-            where: {
-                email: email
             }
         })
     },

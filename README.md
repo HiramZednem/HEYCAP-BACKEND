@@ -4,6 +4,5 @@
 
 - install nodemon: `npm install nodemon`
 - install dependencies: `npm install`
-- you need to migrate the schema of prisma to the db: `npx prisma db pull`
-- you need to refresh the prisma client: `npx prisma generate`
+- you need to migrate the schema of prisma to the db: `npx prisma db push`
 - you can run the proyect: `nodemon scr/index.ts`

@@ -10,5 +10,7 @@ router.post('/', userController.create);
 router.put('/:id', accessTokenAuth,  userController.update);
 router.delete('/:id', accessTokenAuth,  userController.delete);
 router.post('/login', userController.login);
+router.post('/verifynumber/:id', accessTokenAuth, userController.verifyNumberPost);
+router.get('/verifynumber/:id/:code', accessTokenAuth, userController.verifyNumberGet);
 
 export default router;
