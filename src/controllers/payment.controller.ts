@@ -27,24 +27,22 @@ export class PaymentController {
         res.send('Pago exitoso');
     }
 
-    public notification(req: Request, res: Response) {
+    public async notification(req: Request, res: Response) {
         try {
             const { query } = req;
             console.log({ query });
             const topic = query.topic || query.type;
             console.log({ topic });
-            let merchantOrder;
-
             switch (topic) {
                 case 'payment':
-                    const paymentId = query.id || query['data.id'];
-                    console.log("soy payment", paymentId);
-                    const payment = this.paymentService.getPayment(paymentId as string);
-                    // merchantOrder = this.paymentService.merchantOrder(payment.body.order.id);
+                    const paymentId = query['data.id'];
+                    const payment = await this.paymentService.getPayment(paymentId as string);
+                    // console.log("soy paymentFOUND", payment);
+                    this.paymentService.merchantOrder(payment.order?.id as string | undefined as string);
                     break;
                 case 'merchant_order':
                     const merchantOrderId = query.id;
-                    merchantOrder = this.paymentService.merchantOrder(merchantOrderId as string);
+                    this.paymentService.merchantOrder(merchantOrderId as string);
                     break;
                 default:
                     break;
