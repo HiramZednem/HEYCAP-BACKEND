@@ -1,6 +1,6 @@
 import { MercadoPagoConfig, Preference, MerchantOrder, Payment } from 'mercadopago';
 import { MerchantOrderResponse } from 'mercadopago/dist/clients/merchantOrder/commonTypes';
-import { MP_ACCESS_TOKEN } from '../config';
+import { MP_ACCESS_TOKEN, TUNEL_URL } from '../config';
 import { v4 as uuidv4 } from 'uuid';
 
 export class PaymentService {
@@ -18,7 +18,8 @@ export class PaymentService {
 
     public async createProduct(name: string, quantity: number, price: number): Promise<string> {
         const id_product = uuidv4();
-        const url = "https://55de-189-150-47-37.ngrok-free.app/api/v1/mercadopago/";
+        // const url = "https://55de-189-150-47-37.ngrok-free.app/api/v1/mercadopago/";
+        const url = TUNEL_URL + "/api/v1/mercadopago/";
         try {
             const createPreference = await this.preference.create({
                 body: {
