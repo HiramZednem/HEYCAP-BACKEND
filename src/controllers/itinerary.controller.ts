@@ -10,7 +10,7 @@ export const itineraryController = {
                 return res.status(400).json({ error: 'User not found' });
             }
 
-            const itineraries = await itineraryService.getAll(user.user_id);
+            const itineraries = await itineraryService.getAll(user.uuid);
             return res.status(200).json(itineraries);
         } catch (e) {
             res.status(500).json({ error: (e as Error).message });
@@ -31,7 +31,7 @@ export const itineraryController = {
                 return res.status(400).json({ error: 'User not found' });
             }
 
-            const itinerary = await itineraryService.create({...req.body, user_id: user.user_id});
+            const itinerary = await itineraryService.create({...req.body, user_id: user.uuid});
             return res.status(201).json(itinerary);
         } catch (e) {
             res.status(500).json({ error: (e as Error).message });

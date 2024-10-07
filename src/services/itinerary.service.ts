@@ -1,10 +1,10 @@
 import { prisma } from '../db/db';
 
 export const itineraryService = {
-    getAll: async (user_id: number) => {
+    getAll: async (user_id: string) => {
             return await prisma.itineraries.findMany({
                 where: {
-                    user_id: user_id
+                    uuid: user_id
                 }
             })
     },
