@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, response, Response } from 'express';
 import { userService } from '../services';
 import bcrypt, { hash } from 'bcrypt';
 import jwt, { verify } from 'jsonwebtoken';
@@ -6,22 +6,27 @@ import { JWT_KEY, META_KEY, META_URL } from '../config';
 import axios from 'axios';
 import { UserRequest } from './dtos/request/userRequest';
 import { UserResponse } from './dtos/response/userResponse';
+import { BaseResponse } from './dtos/base.response';
 
 export const userController = {
     getAll: async (req: Request, res: Response) => {
         try {
             const users = await userService.getAll();
-            return res.status(200).json(users);
+            const response = new BaseResponse(users, true, 'All users');
+            res.status(200).json(response.toResponseEntity());
         } catch (e) {
-            res.status(500).json({ error: (e as Error).message });
+            const response = new BaseResponse({}, false, 'Error getting users');
+            res.status(500).json(response.toResponseEntity());
         }
     },
     getById: async (req: Request, res: Response) => {
         try {
             const user = await userService.getById(req.params.id);
-            return res.status(200).json(user);
+            const response = new BaseResponse(user, true, 'User found');
+            res.status(200).json(response.toResponseEntity());
         } catch (e) {
-            res.status(500).json({ error: (e as Error).message });
+            const response = new BaseResponse({}, false, 'Error getting user');
+            res.status(500).json(response.toResponseEntity());
         }
     },
     create: async (req: Request, res: Response) => {
@@ -53,9 +58,11 @@ export const userController = {
 
             const hashedPassword = await bcrypt.hash(userRequest.password.trim(), 10);
             const user = await userService.create({...userRequest, password: hashedPassword});
-            return res.status(201).json(user);
+            const response = new BaseResponse(user, true, 'User created');
+            res.status(201).json(response.toResponseEntity());
         } catch (e) {
-            res.status(500).json({ error: (e as Error).message });
+            const response = new BaseResponse({}, false, 'Error creating user');
+            res.status(500).json(response.toResponseEntity());
         }
     },
     update: async (req: Request, res: Response) => {
@@ -94,18 +101,27 @@ export const userController = {
             }
 
             // Si todas las validaciones pasan, proceder con la actualización
-        const updatedUser = await userService.update(userId, userRequest);
-            return res.status(200).json(updatedUser);
+            const updatedUser = await userService.update(userId, userRequest);
+            const response = new BaseResponse(updatedUser, true, 'User updated successfully');
+            res.status(200).json(response.toResponseEntity());
+
         } catch (e) {
-            res.status(500).json({ error: (e as Error).message });
+            const response = new BaseResponse({}, false, 'Error updating user');
+            res.status(500).json(response.toResponseEntity())
         }
     },
     delete: async (req: Request, res: Response) => {
         try {
             const user = await userService.delete(req.params.id);
-            return res.status(200).json('User deleted successfully');
+            if (!user) {
+                return res.status(500).json({error: 'Error deleting user'});
+            }
+
+            const response = new BaseResponse({}, true, 'User deleted successfully');
+            res.status(200).json(response.toResponseEntity());
         } catch (e) {
-            res.status(500).json({ error: (e as Error).message });
+            const response = new BaseResponse({}, false, 'Error deleting user');
+            res.status(500).json(response.toResponseEntity());
         }
     },
     login: async (req: Request, res: Response) => {
@@ -126,10 +142,12 @@ export const userController = {
             const token = jwt.sign({ user }, JWT_KEY as string, { expiresIn: "12h" });
 
             const userResponse = await userService.getById(user.uuid);
-            return res.status(200).json({ user: userResponse, token });
+
+            const response = new BaseResponse({ user: userResponse, token }, true, 'User logged in successfully');
+            res.status(200).json(response.toResponseEntity());
         } catch (error) {
-            console.log(error);
-            res.status(500).json({ error: 'Failed to login' });
+            const response = new BaseResponse({}, false, 'Error logging in');
+            res.status(500).json(response.toResponseEntity());
         }
     },
     verifyNumberPost: async (req: Request, res: Response) => {
@@ -193,9 +211,11 @@ export const userController = {
                     }
                 }
             );
-            return res.status(200).json({ message: 'Mensaje enviado' });
+            const responseB = new BaseResponse({}, true, 'Message sent');
+            res.status(200).json(responseB.toResponseEntity())
         } catch (error) {
-            return res.status(500).json({ error: 'Error al enviar mensaje' });
+            const response = new BaseResponse({}, false, 'Error sending message');
+            res.status(500).json(response.toResponseEntity());
         }
     },
     verifyNumberGet: async (req: Request, res: Response) => {
@@ -213,9 +233,11 @@ export const userController = {
 
         if (user.code == req.params.code) {
             await userService.update(user!.uuid, { code: null, code_created_at: new Date() });;
-            return res.status(200).json({ message: 'Numero verificado' });
+            const response = new BaseResponse({}, true, 'Number verified');
+            res.status(200).json(response.toResponseEntity())
         } else {
-            return res.status(400).json({ error: 'Codigo incorrecto' });
+            const response = new BaseResponse({}, false, 'Error verifying number');
+            res.status(400).json(response.toResponseEntity())
         }
     }
 
