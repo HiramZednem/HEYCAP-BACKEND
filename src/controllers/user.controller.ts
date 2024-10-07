@@ -71,10 +71,14 @@ export const userController = {
     verifyNumberPost: async (req: Request, res: Response) => {
         try {
             const user = await userService.getById(req.params.id);
+            if (!user) {
+                return res.status(404).json({ error: 'User not found' });
+            }
 
             if (user?.phone === undefined) {
                 return res.status(404).json({ error: 'Add a phone number first' });
             }
+
             if (user?.phoneVerified) {
                 return res.status(400).json({ error: 'Phone already verified' });
             }
@@ -132,12 +136,17 @@ export const userController = {
     },
     verifyNumberGet: async (req: Request, res: Response) => {
         const user = await userService.getById(req.params.id);
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
         if (user?.code === undefined) {
             return res.status(400).json({ error: 'No se ha iniciado el proceso de verificación' });
         }
 
         if (user.code == req.params.code) {
-            // aqui tendria que actualizar a true bool
+            await userService.update(user!.uuid, { code: null, code_created_at: new Date() });;
             return res.status(200).json({ message: 'Numero verificado' });
         } else {
             return res.status(400).json({ error: 'Codigo incorrecto' });
