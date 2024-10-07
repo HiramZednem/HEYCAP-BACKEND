@@ -57,7 +57,8 @@
     "pg": "^8.13.0",
     "prisma-app": "file:",
     "ts-node": "^10.9.2",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "vercel": "^37.6.1"
   },
   "jest": {
     "preset": "ts-jest",
