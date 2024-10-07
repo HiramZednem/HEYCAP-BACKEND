@@ -87,11 +87,35 @@ export const userController = {
                 {
                     messaging_product: "whatsapp",
                     recipient_type: "individual",
-                    to: `+52${user.phone}`,  
-                    type: "text",
-                    text: {
-                        preview_url: true,  
-                        body: `Tu código de verificación es: ${verificationCode}`
+                    to: `+52${user.phone}`,
+                    type: "template",
+                    template: {
+                        name: "authentication",
+                        language: {
+                            code: "en_US"
+                        },
+                        components: [
+                            {
+                                type: "body",
+                                parameters: [
+                                    {
+                                        type: "text",
+                                        text: verificationCode
+                                    }
+                                ]
+                            },
+                            {
+                                type: "button",
+                                sub_type: "url",
+                                index: "0",
+                                parameters: [
+                                    {
+                                        type: "text",
+                                        text: verificationCode
+                                    }
+                                ]
+                            }
+                        ]
                     }
                 },
                 {
