@@ -24,7 +24,28 @@ export const userController = {
     },
     create: async (req: Request, res: Response) => {
         try {
-            const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
+            if (req.body.phone.trim().length != 10) {
+                return res.status(400).json({ error: 'Phone must be 10 characters long' });
+            }
+
+            const userByEmail = await userService.getUserByEmail(req.body.email);
+            const userByNickname = await userService.getUserByNickname(req.body.nickname);
+            const userByPhone = await userService.getUserByPhone(req.body.phone);
+            if (userByEmail) {
+                return res.status(400).json({ error: 'Email already in use' });
+            }
+            if (userByNickname) {
+                return res.status(400).json({ error: 'Nickname already in use' });
+            }
+            if (userByPhone) {
+                return res.status(400).json({ error: 'Phone already in use' });
+            }
+            if (req.body.password.trim().length < 8) {
+                return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+            }
+
+            const hashedPassword = await bcrypt.hash(req.body.password.trim(), 10);
             const user = await userService.create({...req.body, password: hashedPassword});
             return res.status(201).json(user);
         } catch (e) {

@@ -43,4 +43,20 @@ export const userService = {
             }
         })
     },
+
+    getUserByNickname: async (nickname: string) => {
+        return await prisma.users.findFirst({
+            where: {
+                nickname: nickname
+            }
+        })
+    },
+
+    getUserByPhone: async (phone: string) => {
+        return await prisma.users.findFirst({
+            where: {
+                phone: phone
+            }
+        })
+    }
 };
