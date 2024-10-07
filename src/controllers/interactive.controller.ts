@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { InteractiveService } from "../services/interactive.service";
-import { BaseResponse } from "./base.response";
+import { BaseResponse } from "./dtos/base.response";
 
 export class InteractiveController {
     private interactiveService: InteractiveService;

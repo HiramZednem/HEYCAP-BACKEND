@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { PlaceService } from "../services/place.service";
-import { BaseResponse } from "./base.response";
+import { BaseResponse } from "./dtos/base.response";
 
 export class PlaceController {
     private placeServices: PlaceService;
