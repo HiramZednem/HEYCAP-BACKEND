@@ -42,17 +42,6 @@ export const userService = {
         })
     },
 
-    login : async (email: string, password: string) => {
-        const user: UserResponse | null = await userService.getUserByEmail(email);
-            // if (!user) {
-            //     return res.status(404).json({ error: 'User not found' });
-            // }
-            // const passwordMatch = await bcrypt.compare(password, user.password);
-            // if (!passwordMatch) {
-            //     return res.status(401).json({ error: 'Invalid password' });
-            // }
-    },
-
     getUserByEmail: async (email: string) => {
         return await prisma.users.findFirst({
             where: {
