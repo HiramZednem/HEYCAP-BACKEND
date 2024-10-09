@@ -39,6 +39,7 @@ export class Server {
     this.app.use('/api/v1/places', routes.placeRoutes);
     this.app.use('/api/v1/interactive', routes.interactiveRouter);
 
+
   }
 
   listen(){
