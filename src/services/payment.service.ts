@@ -1,3 +1,4 @@
+
 import { MercadoPagoConfig, Preference, MerchantOrder, Payment } from 'mercadopago';
 import { MerchantOrderResponse } from 'mercadopago/dist/clients/merchantOrder/commonTypes';
 import { MP_ACCESS_TOKEN, TUNEL_URL } from '../config';
@@ -79,5 +80,4 @@ export class PaymentService {
                 throw new Error('Error getting merchant order');
             });
     }
-
 };
