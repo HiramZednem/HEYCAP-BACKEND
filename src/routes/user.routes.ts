@@ -12,5 +12,7 @@ router.delete('/:id', accessTokenAuth,  userController.delete);
 router.post('/login', userController.login);
 router.post('/verifynumber/:id', accessTokenAuth, userController.verifyNumberPost);
 router.get('/verifynumber/:id/:code', accessTokenAuth, userController.verifyNumberGet);
+router.post('/forgotpassword', userController.forgotPassword);
+router.get('/forgotpassword/:code', userController.forgotPasswordGet);
 
 export default router;
