@@ -42,12 +42,29 @@ model users {
   phone           String        @unique @db.VarChar(10)
   phoneVerified   Boolean?      @default(false)
   avatar          String?       @db.VarChar
-  code            String?       @db.VarChar(4)
-  code_created_at DateTime?     @default(now()) @db.Timestamp(6)
   created_at      DateTime?     @default(now()) @db.Timestamp(6)
   dislikes        dislikes[]
   itineraries     itineraries[]
   likes           likes[]
+  code           codes?
+}
+
+
+model codes {
+  code_id        Int      @id @default(autoincrement())
+  code           String   @db.VarChar(4)    // Código numérico o string de 4 caracteres
+  code_type      CodeType // Tipo de código (enum)
+  created_at     DateTime @default(now()) @db.Timestamp(6)
+
+  // Relación con el modelo "users"
+  user           users    @relation(fields: [user_id], references: [user_id])
+  user_id        Int      @unique
+}
+
+enum CodeType {
+  VERIFY
+  LOGIN
+  RECOVERY
 }
 
 model itineraries {
