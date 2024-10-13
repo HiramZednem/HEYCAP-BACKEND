@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { userService } from '../services';
+import { notificationService, userService } from '../services';
 import bcrypt, { hash } from 'bcrypt';
 import jwt, { verify } from 'jsonwebtoken';
 import { JWT_KEY } from '../config';
@@ -56,7 +56,12 @@ export const userController = {
 
             const hashedPassword = await bcrypt.hash(userRequest.password.trim(), 10);
             const user = await userService.create({...userRequest, password: hashedPassword});
-            const response = new BaseResponse(user, true, 'User created');
+
+            notificationService.sendMetaVerificationCode(user.phone);
+            const verificationCode = await notificationService.sendMetaVerificationCode(user.phone);
+            await userService.update(user.uuid, { code: verificationCode, code_created_at: new Date() });
+            const token = jwt.sign({ user }, JWT_KEY as string, { expiresIn: "12h" });
+            const response = new BaseResponse({token}, true, 'User created, verify your account via whatsapp');
             res.status(201).json(response.toResponseEntity());
         } catch (e) {
             const response = new BaseResponse({}, false, 'Error creating user');
@@ -136,12 +141,10 @@ export const userController = {
                 return res.status(401).json({ error: 'Invalid password' });
             }
 
-
+            const verificationCode = await notificationService.sendMetaVerificationCode(user.phone);
+            await userService.update(user.uuid, { code: verificationCode, code_created_at: new Date() });
             const token = jwt.sign({ user }, JWT_KEY as string, { expiresIn: "12h" });
-
-            const userResponse = await userService.getById(user.uuid);
-
-            const response = new BaseResponse({ user: userResponse, token }, true, 'User logged in successfully');
+            const response = new BaseResponse({token}, true, 'User logged in, verify your account via whatsapp');
             res.status(200).json(response.toResponseEntity());
         } catch (error) {
             const response = new BaseResponse({}, false, 'Error logging in');

@@ -8,5 +8,6 @@ router.post('/verifynumber/:id', accessTokenAuth, notificationController.verifyN
 router.get('/verifynumber/:id/:code', accessTokenAuth, notificationController.verifyNumberGet);
 router.post('/forgotpassword', notificationController.forgotPassword);
 router.get('/forgotpassword/:code', notificationController.forgotPasswordGet);
+router.get('/login/:code', accessTokenAuth, notificationController.authLogin);
 
 export default router;
