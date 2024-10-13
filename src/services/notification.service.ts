@@ -1,5 +1,4 @@
 import { META_KEY, META_URL } from '../config';
-import { prisma } from '../db/db';
 import axios from 'axios';
 
 
