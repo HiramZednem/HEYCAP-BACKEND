@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { JWT_KEY } from "../config";
+import { jwtPlugin } from "../public/jwt-plugin";
 
 export const accessTokenAuth = (req: Request, res: Response, next: NextFunction) => {
     const accessToken = req.headers.authorization?.split(" ")[1];
@@ -9,7 +8,7 @@ export const accessTokenAuth = (req: Request, res: Response, next: NextFunction)
     }
 
     try {
-        jwt.verify(accessToken, JWT_KEY as string) as any;
+        jwtPlugin.verify(accessToken);
         next();
     } catch (err) {
         return res.status(401).json({ message: "Invalid access token" });

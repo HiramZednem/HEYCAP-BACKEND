@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { notificationService, userService } from '../services';
-import { JWT_KEY } from '../config';
 import { UserRequest } from './dtos/request/userRequest';
 import { BaseResponse } from './dtos/base.response';
 import { jwtPlugin } from '../public/jwt-plugin';

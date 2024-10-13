@@ -5,4 +5,7 @@ export const jwtPlugin = {
     sign: (data: {uuid: string}) => {
         return jwt.sign(data, JWT_KEY as string, { expiresIn: "1h" });
     },
+    verify: (token: string) => {
+        return jwt.verify(token, JWT_KEY as string) as any;
+    }
 }
