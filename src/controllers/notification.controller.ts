@@ -8,7 +8,7 @@ import jwt from 'jsonwebtoken';
 export const notificationController = {
     verifyNumberPost: async (req: Request, res: Response) => {
         try {
-            const user = await userService.getById(req.params.id);
+            const user = await userService.getUserByEmail(req.body.email);
             if (!user) {
                 return res.status(404).json({ error: 'User not found' });
             }
@@ -32,13 +32,11 @@ export const notificationController = {
         }
     },
     verifyNumberGet: async (req: Request, res: Response) => {
-        const userExist = await userService.getById(req.params.id);
+        const user = await userService.getUserByEmail(req.body.email);
 
-        if (!userExist) {
-            return res.status(404).json({ error: 'User not found' });
+        if (user?.phoneVerified) {
+            return res.status(400).json({ error: 'Phone already verified' });
         }
-
-        const user = await userService.getUserByEmail(userExist.email);
 
         if (user?.code === undefined) {
             return res.status(400).json({ error: 'No se ha iniciado el proceso de verificación' });
@@ -57,7 +55,7 @@ export const notificationController = {
             res.status(400).json(response.toResponseEntity())
         }
     },
-    authLogin: async (req: Request, res: Response) => {
+    authLoginGet: async (req: Request, res: Response) => {
         try {
             const user = await userService.getUserByEmail(req.body.email);
 
@@ -66,6 +64,7 @@ export const notificationController = {
             }
 
             if (user.code == req.params.code) {
+                await userService.update(user!.uuid, { code: null, code_created_at: new Date(), phoneVerified: true });
                 const userResponse = await userService.getById(user.uuid);
                 const token = jwt.sign({ user }, JWT_KEY as string, { expiresIn: "12h" });
                 const response = new BaseResponse({ user:userResponse, token }, true, 'Login success');
@@ -74,6 +73,28 @@ export const notificationController = {
                 const response = new BaseResponse({}, false, 'Error verifyng number');
                 res.status(400).json(response.toResponseEntity())
             }
+        } catch (error) {
+            const response = new BaseResponse({}, false, 'Error sending message');
+            res.status(500).json(response.toResponseEntity());
+        }
+    },
+    authLoginPost: async (req: Request, res: Response) => {
+        try {
+            const user = await userService.getUserByEmail(req.body.email);
+
+            if (!user) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+
+            if (user?.phone === undefined) {
+                return res.status(404).json({ error: 'Add a phone number first' });
+            }
+
+            const verificationCode = await notificationService.sendMetaVerificationCode(user.phone);
+            await userService.update(user.uuid, { code: verificationCode, code_created_at: new Date() });
+
+            const response = new BaseResponse({}, true, 'Message sent');
+            res.status(200).json(response.toResponseEntity())
         } catch (error) {
             const response = new BaseResponse({}, false, 'Error sending message');
             res.status(500).json(response.toResponseEntity());
