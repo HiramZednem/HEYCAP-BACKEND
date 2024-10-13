@@ -1,11 +1,9 @@
-import { Request, response, Response } from 'express';
+import { Request, Response } from 'express';
 import { userService } from '../services';
 import bcrypt, { hash } from 'bcrypt';
 import jwt, { verify } from 'jsonwebtoken';
-import { JWT_KEY, META_KEY, META_URL } from '../config';
-import axios from 'axios';
+import { JWT_KEY } from '../config';
 import { UserRequest } from './dtos/request/userRequest';
-import { UserResponse } from './dtos/response/userResponse';
 import { BaseResponse } from './dtos/base.response';
 
 export const userController = {
@@ -149,153 +147,7 @@ export const userController = {
             const response = new BaseResponse({}, false, 'Error logging in');
             res.status(500).json(response.toResponseEntity());
         }
-    },
-    verifyNumberPost: async (req: Request, res: Response) => {
-        try {
-            const user = await userService.getById(req.params.id);
-            if (!user) {
-                return res.status(404).json({ error: 'User not found' });
-            }
-
-            if (user?.phone === undefined) {
-                return res.status(404).json({ error: 'Add a phone number first' });
-            }
-
-            if (user?.phoneVerified) {
-                return res.status(400).json({ error: 'Phone already verified' });
-            }
-
-            const verificationCode = await sendMetaVerificationCode(user.phone);
-            console.log(verificationCode)
-            await userService.update(user.uuid, { code: verificationCode, code_created_at: new Date() });
-
-            const response = new BaseResponse({}, true, 'Message sent');
-            res.status(200).json(response.toResponseEntity())
-        } catch (error) {
-            const response = new BaseResponse({}, false, 'Error sending message');
-            res.status(500).json(response.toResponseEntity());
-        }
-    },
-    verifyNumberGet: async (req: Request, res: Response) => {
-        const userExist = await userService.getById(req.params.id);
-
-        if (!userExist) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        const user = await userService.getUserByEmail(userExist.email);
-
-        if (user?.code === undefined) {
-            return res.status(400).json({ error: 'No se ha iniciado el proceso de verificación' });
-        }
-
-        if (user.code == req.params.code) {
-            await userService.update(user!.uuid, { code: null, code_created_at: new Date(), phoneVerified: true });;
-            const response = new BaseResponse({}, true, 'Number verified');
-            res.status(200).json(response.toResponseEntity())
-        } else {
-            const response = new BaseResponse({}, false, 'Error verifying number');
-            res.status(400).json(response.toResponseEntity())
-        }
-    },
-    forgotPassword: async (req: Request, res: Response) => {
-        try {
-            const user = await userService.getUserByEmail(req.body.email);
-
-            if (!user) {
-                return res.status(404).json({ error: 'User not found' });
-            }
-
-            if (user?.phone === undefined) {
-                return res.status(404).json({ error: 'You do not have a phone number in your account, reach us by support service' });
-            }
-
-            const verificationCode = await sendMetaVerificationCode(user.phone);
-            await userService.update(user.uuid, { code: verificationCode, code_created_at: new Date() });
-            const response = new BaseResponse({}, true, 'Message sent');
-            res.status(200).json(response.toResponseEntity())
-        } catch (error) {
-            const response = new BaseResponse({}, false, 'Error sending message');
-            res.status(500).json(response.toResponseEntity());
-        }
-    },
-    forgotPasswordGet: async (req: Request, res: Response) => {
-        const userExist = await userService.getUserByEmail(req.body.email);
-        const newPassword = req.body.newPassword;
-
-        if (newPassword.trim().length < 8) {
-            return res.status(400).json({ error: 'Password must be at least 8 characters long' });
-        }
-
-        if (!userExist) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        if (userExist?.code === undefined) {
-            return res.status(400).json({ error: 'No se ha iniciado el proceso de recovery' });
-        }
-
-        if (userExist.code == req.params.code) {
-            const hashedPassword = await bcrypt.hash(newPassword.trim(), 10);
-            await userService.update(userExist!.uuid, { code: null, code_created_at: new Date(), password: hashedPassword });;
-            const response = new BaseResponse({}, true, 'Password changed');
-            res.status(200).json(response.toResponseEntity())
-        } else {
-            const response = new BaseResponse({}, false, 'Error recovering account');
-            res.status(400).json(response.toResponseEntity())
-        }
     }
 
-
-
 };
-
-const sendMetaVerificationCode = async (phone: any) => {
-    const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
-    const response = await axios.post(
-        META_URL!,
-        {
-            messaging_product: "whatsapp",
-            recipient_type: "individual",
-            to: `+52${phone}`,
-            type: "template",
-            template: {
-                name: "authentication",
-                language: {
-                    code: "en_US"
-                },
-                components: [
-                    {
-                        type: "body",
-                        parameters: [
-                            {
-                                type: "text",
-                                text: verificationCode
-                            }
-                        ]
-                    },
-                    {
-                        type: "button",
-                        sub_type: "url",
-                        index: "0",
-                        parameters: [
-                            {
-                                type: "text",
-                                text: verificationCode
-                            }
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${META_KEY}`  // Token de acceso de Meta
-            }
-        }
-    );
-    return verificationCode;
-
-}
 
