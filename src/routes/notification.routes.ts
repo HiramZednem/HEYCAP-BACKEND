@@ -9,7 +9,6 @@ router.get('/verifynumber/:code', accessTokenAuth, notificationController.verify
 router.post('/forgotpassword', notificationController.forgotPassword);
 router.get('/forgotpassword/:code', notificationController.forgotPasswordGet);
 router.get('/login/:code', accessTokenAuth, notificationController.authLoginGet);
-router.post('/login/', accessTokenAuth, notificationController.authLoginPost);
 
 
 export default router;

@@ -1,11 +1,9 @@
 import { META_KEY, META_URL } from '../config';
-import { prisma } from '../db/db';
 import axios from 'axios';
 
 
 export const notificationService = {
-    sendMetaVerificationCode: async (phone: any) => {
-        const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
+    sendMetaVerificationCode: async (phone: string, code: string) => {
         const response = await axios.post(
             META_URL!,
             {
@@ -24,7 +22,7 @@ export const notificationService = {
                             parameters: [
                                 {
                                     type: "text",
-                                    text: verificationCode
+                                    text: code
                                 }
                             ]
                         },
@@ -35,7 +33,7 @@ export const notificationService = {
                             parameters: [
                                 {
                                     type: "text",
-                                    text: verificationCode
+                                    text: code
                                 }
                             ]
                         }
@@ -49,7 +47,7 @@ export const notificationService = {
                 }
             }
         );
-        return verificationCode;
+        return response.data;
     
     },
 };

@@ -1,13 +1,15 @@
-import { UserRequest } from '../controllers/dtos/request/userRequest';
-import { UserResponse } from '../controllers/dtos/response/userResponse';
+import { UserRequest } from '../dtos/request/userRequest';
+import { UserResponse } from '../dtos/response/userResponse';
 import { prisma } from '../db/db';
 import { bcryptPlugin } from '../public';
 import { notificationService } from './notification.service';
+import { codeService } from './code.service';
+import { CodeType } from '@prisma/client';
 
 export const userService = {
     getAll: async () => {
         const users: UserRequest[] | null = await prisma.users.findMany()
-        return users.map((user) => toUserResponse(user))
+        return users.map((user) => userService.toUserResponse(user))
     },
 
     getById: async (uuid: string) => {
@@ -20,7 +22,7 @@ export const userService = {
         if (!user) {
             throw new Error('User not found');
         }
-        return toUserResponse(user!)
+        return userService.toUserResponse(user!)
     },
 
     create: async (userRequest: UserRequest) => {
@@ -62,7 +64,7 @@ export const userService = {
                 password: hashedPassword
             }
         })
-        return toUserResponse(createdUser)
+        return userService.toUserResponse(createdUser)
     },
 
     update: async (uuid: string, data: any) => {
@@ -72,7 +74,7 @@ export const userService = {
             },
             data: data
         })
-        return toUserResponse(updatedUser);
+        return userService.toUserResponse(updatedUser);
     },
 
     delete: async (id: string) => {
@@ -82,6 +84,23 @@ export const userService = {
                 uuid: id
             }
         })
+    },
+    updatePassword: async (email: string, password: string) => {
+        if (password.trim().length < 8) {
+            throw new Error('Password must be at least 8 characters long');
+        }
+
+        const hashedPassword = await bcryptPlugin.hashPassword(password);
+        const updatedUser: UserRequest =  await prisma.users.update({
+            where: {
+                email: email
+            },
+            data: {
+                password: hashedPassword
+            }
+        })
+        
+        return userService.toUserResponse(updatedUser);
     },
 
     login: async (email: string, password: string) => {
@@ -94,20 +113,26 @@ export const userService = {
         }
         const isPasswordValid = await bcryptPlugin.comparePassword(password, user.password);
         if (isPasswordValid) {
-            const verificationCode = await notificationService.sendMetaVerificationCode(user.phone);
-            await userService.update(user.uuid, { code: verificationCode, code_created_at: new Date() });
-            return toUserResponse(user);
+            const {code, user} = await codeService.generateCode(email, CodeType.LOGIN);
+            await notificationService.sendMetaVerificationCode(user.phone, code.code);
+            return userService.toUserResponse(user);
         } else {
             throw new Error('Invalid password');
         }
     },
 
     getUserByEmail: async (email: string) => {
-        return await prisma.users.findFirst({
+        const user = await prisma.users.findFirst({
             where: {
-                email: email
+            email: email
             }
-        })
+        });
+
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        return user;
     },
 
     getUserByNickname: async (nickname: string) => {
@@ -125,17 +150,17 @@ export const userService = {
             }
         })
     },
+    toUserResponse: (user: UserRequest): UserResponse => {
+        return {
+            uuid: user.uuid,
+            name: user.name,
+            last_name: user.last_name,
+            nickname: user.nickname,
+            email: user.email,
+            phone: user.phone,
+            phoneVerified: user.phoneVerified,
+            avatar: user.avatar
+        };
+    }
 };
 
-const toUserResponse = (user: UserRequest): UserResponse => {
-    return {
-        uuid: user.uuid,
-        name: user.name,
-        last_name: user.last_name,
-        nickname: user.nickname,
-        email: user.email,
-        phone: user.phone,
-        phoneVerified: user.phoneVerified,
-        avatar: user.avatar
-    };
-}
