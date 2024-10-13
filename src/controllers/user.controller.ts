@@ -57,7 +57,6 @@ export const userController = {
             const hashedPassword = await bcrypt.hash(userRequest.password.trim(), 10);
             const user = await userService.create({...userRequest, password: hashedPassword});
 
-            notificationService.sendMetaVerificationCode(user.phone);
             const verificationCode = await notificationService.sendMetaVerificationCode(user.phone);
             await userService.update(user.uuid, { code: verificationCode, code_created_at: new Date() });
             const token = jwt.sign({ user }, JWT_KEY as string, { expiresIn: "12h" });
