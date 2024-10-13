@@ -1,8 +1,10 @@
 import { Request, Response } from 'express';
 import { notificationService, userService } from '../services';
-import { UserRequest } from './dtos/request/userRequest';
-import { BaseResponse } from './dtos/base.response';
+import { UserRequest } from '../dtos/request/userRequest';
+import { BaseResponse } from '../dtos/base.response';
 import { jwtPlugin } from '../public/jwt-plugin';
+import { codeService } from '../services/code.service';
+import { CodeType } from '@prisma/client';
 
 export const userController = {
     getAll: async (req: Request, res: Response) => {
@@ -32,10 +34,10 @@ export const userController = {
     create: async (req: Request, res: Response) => {
         try {
             const userRequest: UserRequest = req.body;
-            const user = await userService.create(userRequest);
+            const createdUser = await userService.create(userRequest);
 
-            const verificationCode = await notificationService.sendMetaVerificationCode(user.phone);
-            await userService.update(user.uuid, { code: verificationCode, code_created_at: new Date() });
+            const {code, user} = await codeService.generateCode(createdUser.email, CodeType.VERIFY);
+            await notificationService.sendMetaVerificationCode(user.phone, code.code);
 
             const token = jwtPlugin.sign({uuid: user.uuid});
             const response = new BaseResponse({ token }, true, 'User created successfully. A WhatsApp verification code has been sent. Please use it to verify your account.');
@@ -115,7 +117,7 @@ export const userController = {
             const { email, password } = req.body;
             const userResponse = await userService.login(email, password);
             
-            const response = new BaseResponse({ token: jwtPlugin.sign({uuid: userResponse.uuid}) }, true, 'User logged in successfully. A verification code has been sent to your email. Please use it to continue.');
+            const response = new BaseResponse({ token: jwtPlugin.sign({uuid: userResponse.uuid}) }, true, 'User logged in successfully. A verification code has been sent to your WhatsApp. Please use it to continue.');
             res.status(200).json(response.toResponseEntity());
         } catch (error: unknown) {
             if (error instanceof Error) {

@@ -46,7 +46,8 @@ model users {
   dislikes        dislikes[]
   itineraries     itineraries[]
   likes           likes[]
-  code           codes?
+  code            codes?        
+
 }
 
 
@@ -57,10 +58,9 @@ model codes {
   created_at     DateTime @default(now()) @db.Timestamp(6)
 
   // Relación con el modelo "users"
-  user           users    @relation(fields: [user_id], references: [user_id])
+  user           users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
   user_id        Int      @unique
 }
-
 enum CodeType {
   VERIFY
   LOGIN

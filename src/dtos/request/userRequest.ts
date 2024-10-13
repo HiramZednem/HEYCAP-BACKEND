@@ -9,7 +9,5 @@ export interface UserRequest {
     phone:           string;
     phoneVerified:   boolean | null;
     avatar:          string | null;
-    code:            string | null;
-    code_created_at: Date | null;
     created_at:      Date | null;
 }
