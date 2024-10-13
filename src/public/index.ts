@@ -1,0 +1,1 @@
+export { bcryptPlugin } from './bcrypt-plugin';
