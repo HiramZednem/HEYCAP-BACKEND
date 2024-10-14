@@ -66,7 +66,7 @@ export const notificationController = {
                 const response = new BaseResponse({ user: userService.toUserResponse(user), token }, true, 'Login success');
                 res.status(200).json(response.toResponseEntity())
             } else {
-                throw new Error('Error verifying number');
+                throw new Error('Error loggin in');
             }
         } catch (error) {
             if (error instanceof Error) {
