@@ -4,9 +4,10 @@ import { BaseResponse } from '../dtos/base.response';
 import { codeService } from '../services/code.service';
 import { CodeType } from '@prisma/client';
 import { jwtPlugin } from '../public';
+import { tokenService } from '../services/token.service';
 
 export const notificationController = {
-    verifyNumberPost: async (req: Request, res: Response) => {
+    verifyNumberResendCode: async (req: Request, res: Response) => {
         try {
             const email = req.body.email;
             const {code, user} = await codeService.generateCode(email, CodeType.VERIFY);
@@ -25,18 +26,19 @@ export const notificationController = {
         }
     },
     
-    verifyNumberGet: async (req: Request, res: Response) => {
+    verifyNumberWithCode: async (req: Request, res: Response) => {
         try {
-            const email = req.body.email;
+            const accessToken = req.app.locals.accessToken;
+            const uuid = jwtPlugin.decode(accessToken).uuid;
+            const tokenValid = await tokenService.validateToken(accessToken, uuid);
+
             const code = req.params.code;
             const type = CodeType.VERIFY;
+            const user = await userService.getById(uuid);
             
             
-            if ( await codeService.verifyCode(email, code, type) ) {
-                const user = await userService.getUserByEmail(email);
-                const token = jwtPlugin.sign({uuid: user.uuid});
-
-                const response = new BaseResponse({ user: userService.toUserResponse(user), token }, true, 'Number verified');
+            if ( tokenValid && await codeService.verifyCode(user.email, code, type) ) {
+                const response = new BaseResponse({ user: userService.toUserResponse(user) }, true, 'Number verified');
                 res.status(200).json(response.toResponseEntity())
             } else {
                 throw new Error('Error verifying number');
@@ -53,17 +55,18 @@ export const notificationController = {
         
     },
 
-    authLoginGet: async (req: Request, res: Response) => {
+    authLogin: async (req: Request, res: Response) => {
         try {
-            const email = req.body.email;
+            const accessToken = req.app.locals.accessToken;
+            const uuid = jwtPlugin.decode(accessToken).uuid;
+            const tokenValid = await tokenService.validateToken(accessToken, uuid);
+
+            const user = await userService.getById(uuid);
             const code = req.params.code;
             const type = CodeType.LOGIN;
 
-            if ( await codeService.verifyCode(email, code, type) ) {
-                const user = await userService.getUserByEmail(email);
-                const token = jwtPlugin.sign({uuid: user.uuid});
-
-                const response = new BaseResponse({ user: userService.toUserResponse(user), token }, true, 'Login success');
+            if ( tokenValid && await codeService.verifyCode(user.email, code, type) ) {
+                const response = new BaseResponse({ user: userService.toUserResponse(user) }, true, 'Login success');
                 res.status(200).json(response.toResponseEntity())
             } else {
                 throw new Error('Error loggin in');

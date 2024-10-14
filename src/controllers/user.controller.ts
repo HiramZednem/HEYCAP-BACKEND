@@ -5,22 +5,15 @@ import { BaseResponse } from '../dtos/base.response';
 import { jwtPlugin } from '../public/jwt-plugin';
 import { codeService } from '../services/code.service';
 import { CodeType } from '@prisma/client';
+import { tokenService } from '../services/token.service';
 
 export const userController = {
-    getAll: async (req: Request, res: Response) => {
-        try {
-            const users = await userService.getAll();
-            const response = new BaseResponse(users, true, 'Successfully retrieved all users');
-            res.status(200).json(response.toResponseEntity());
-        } catch (e) {
-            const response = new BaseResponse({}, false, 'Error retrieving users');
-            res.status(500).json(response.toResponseEntity());
-        }
-    },
     getById: async (req: Request, res: Response) => {
         try {
             const user = await userService.getById(req.params.id);
-            const response = new BaseResponse(user, true, 'User retrieved successfully');
+            const userResponse = userService.toUserResponse(user);
+
+            const response = new BaseResponse(userResponse, true, 'User retrieved successfully');
             res.status(200).json(response.toResponseEntity());
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -39,7 +32,7 @@ export const userController = {
             const {code, user} = await codeService.generateCode(createdUser.email, CodeType.VERIFY);
             await notificationService.sendMetaVerificationCode(user.phone, code.code);
 
-            const token = jwtPlugin.sign({uuid: user.uuid});
+            const token = await tokenService.createToken(user.uuid);
             const response = new BaseResponse({ token }, true, 'User created successfully. A WhatsApp verification code has been sent. Please use it to verify your account.');
             res.status(201).json(response.toResponseEntity());
         } catch (error: unknown) {
@@ -53,10 +46,13 @@ export const userController = {
     },
     update: async (req: Request, res: Response) => {
         try {
-            const userId = req.params.id;
+            const accessToken = req.app.locals.accessToken;
+            const uuid = jwtPlugin.decode(accessToken).uuid;
+            await tokenService.validateToken(accessToken, uuid);
+
             const userRequest = req.body
 
-            const currentUser = await userService.getById(userId);
+            const currentUser = await userService.getById(uuid);
 
             if (userRequest.email && userRequest.email !== currentUser.email) {
                 const userByEmail = await userService.getUserByEmail(userRequest.email);
@@ -84,7 +80,7 @@ export const userController = {
                     }
                 }
 
-            const updatedUser = await userService.update(userId, userRequest);
+            const updatedUser = await userService.update(uuid, userRequest);
             const response = new BaseResponse(updatedUser, true, 'User updated successfully');
             res.status(200).json(response.toResponseEntity());
 
@@ -99,7 +95,11 @@ export const userController = {
     },
     delete: async (req: Request, res: Response) => {
         try {
-            const user = await userService.delete(req.params.id);
+            const accessToken = req.app.locals.accessToken;
+            const uuid = jwtPlugin.decode(accessToken).uuid;
+            await tokenService.validateToken(accessToken, uuid);
+
+            const user = await userService.delete(uuid);
 
             const response = new BaseResponse({}, true, 'User deleted successfully');
             res.status(200).json(response.toResponseEntity());
@@ -116,8 +116,9 @@ export const userController = {
         try {
             const { email, password } = req.body;
             const userResponse = await userService.login(email, password);
-            
-            const response = new BaseResponse({ token: jwtPlugin.sign({uuid: userResponse.uuid}) }, true, 'User logged in successfully. A verification code has been sent to your WhatsApp. Please use it to continue.');
+
+            const token = await tokenService.createToken(userResponse.uuid);
+            const response = new BaseResponse({ token: token }, true, 'User logged in successfully. A verification code has been sent to your WhatsApp. Please use it to continue.');
             res.status(200).json(response.toResponseEntity());
         } catch (error: unknown) {
             if (error instanceof Error) {

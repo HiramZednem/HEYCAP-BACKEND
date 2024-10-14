@@ -4,11 +4,11 @@ import { accessTokenAuth } from '../middlewares/jwtAuth';
 
 const router = Router();
 
-router.post('/verifynumber/', accessTokenAuth, notificationController.verifyNumberPost);
-router.get('/verifynumber/:code', accessTokenAuth, notificationController.verifyNumberGet);
+router.post('/verifynumber/', accessTokenAuth, notificationController.verifyNumberResendCode);
+router.post('/verifynumber/:code', accessTokenAuth, notificationController.verifyNumberWithCode);
 router.post('/forgotpassword', notificationController.forgotPassword);
-router.get('/forgotpassword/:code', notificationController.forgotPasswordGet);
-router.get('/login/:code', accessTokenAuth, notificationController.authLoginGet);
+router.post('/forgotpassword/:code', notificationController.forgotPasswordGet);
+router.post('/login/:code', accessTokenAuth, notificationController.authLogin);
 
 
 export default router;

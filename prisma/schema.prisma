@@ -46,10 +46,39 @@ model users {
   dislikes        dislikes[]
   itineraries     itineraries[]
   likes           likes[]
-  code            codes?        
-
+  code            codes?    
+  tokens          tokens[]    
 }
 
+model tokens {
+  token_id      Int              @id @default(autoincrement())
+  valid_at      DateTime?         // la fecha hasta la que esta vigente
+  created_at    DateTime         @default(now()) @db.Timestamp(6)
+  status        TokenStatus      
+
+  // Relación con el modelo "users"
+  user_id       Int
+  user          users            @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  // Relación con el modelo "custom_settings"
+  custom_settings custom_settings[] // Relación uno a muchos con custom_settings
+}
+
+enum TokenStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model custom_settings {
+  key         String   @db.VarChar(255) // aqui ya va el token
+  key_value   String   @db.VarChar(255) // 3m, 1h y asi...
+
+  // Relación con el modelo "tokens"
+  token_id    Int
+  token       tokens   @relation(fields: [token_id], references: [token_id], onDelete: Cascade)
+  
+  @@id([key, token_id])
+}
 
 model codes {
   code_id        Int      @id @default(autoincrement())
