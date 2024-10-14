@@ -7,11 +7,6 @@ import { codeService } from './code.service';
 import { CodeType } from '@prisma/client';
 
 export const userService = {
-    getAll: async () => {
-        const users: UserRequest[] | null = await prisma.users.findMany()
-        return users.map((user) => userService.toUserResponse(user))
-    },
-
     getById: async (uuid: string) => {
         const user: UserRequest | null = await prisma.users.findUnique({
             where: {
@@ -22,7 +17,7 @@ export const userService = {
         if (!user) {
             throw new Error('User not found');
         }
-        return userService.toUserResponse(user!)
+        return user;
     },
 
     create: async (userRequest: UserRequest) => {

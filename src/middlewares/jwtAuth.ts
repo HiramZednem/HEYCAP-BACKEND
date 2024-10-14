@@ -9,6 +9,8 @@ export const accessTokenAuth = (req: Request, res: Response, next: NextFunction)
 
     try {
         jwtPlugin.verify(accessToken);
+        // Save the access token for later use
+        req.app.locals.accessToken = accessToken;
         next();
     } catch (err) {
         return res.status(401).json({ message: "Invalid access token" });
