@@ -10,10 +10,11 @@ export const notificationController = {
     verifyNumberResendCode: async (req: Request, res: Response) => {
         try {
             const email = req.body.email;
-            const {code, user} = await codeService.generateCode(email, CodeType.VERIFY);
-            await notificationService.sendMetaVerificationCode(user.phone, code.code);
+            const password = req.body.password;
 
-            const response = new BaseResponse({}, true, 'Message sent');
+            const userLogin = await userService.loginVerify(email, password);
+            const token = await tokenService.createToken(userLogin.uuid);
+            const response = new BaseResponse({token}, true, 'Message sent');
             res.status(200).json(response.toResponseEntity())
         } catch (error) {
             if (error instanceof Error) {

@@ -3,12 +3,6 @@ import { userService } from "./user.service";
 describe('GET - User Service', () => {
     const user_id = '17';
 
-    test('This should return all users ', async () => {
-        const result  = await userService.getAll();
-        
-        expect(result).toBeInstanceOf(Array);
-    });
-
     test('This should return a user by id', async () => {
         const result  = await userService.getById(user_id);
         

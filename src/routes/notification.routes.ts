@@ -4,7 +4,7 @@ import { accessTokenAuth } from '../middlewares/jwtAuth';
 
 const router = Router();
 
-router.post('/verifynumber/', accessTokenAuth, notificationController.verifyNumberResendCode);
+router.post('/verifynumber/', notificationController.verifyNumberResendCode);
 router.post('/verifynumber/:code', accessTokenAuth, notificationController.verifyNumberWithCode);
 router.post('/forgotpassword', notificationController.forgotPassword);
 router.post('/forgotpassword/:code', notificationController.forgotPasswordGet);

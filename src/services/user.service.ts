@@ -115,6 +115,20 @@ export const userService = {
             throw new Error('Invalid password');
         }
     },
+    loginVerify: async (email: string, password: string) => {
+        const user = await userService.getUserByEmail(email);
+        if (!user) {
+            throw new Error('User does not exist');
+        }
+        const isPasswordValid = await bcryptPlugin.comparePassword(password, user.password);
+        if (isPasswordValid) {
+            const {code, user} = await codeService.generateCode(email, CodeType.VERIFY);
+            await notificationService.sendMetaVerificationCode(user.phone, code.code);
+            return userService.toUserResponse(user);
+        } else {
+            throw new Error('Invalid password');
+        }
+    },
 
     getUserByEmail: async (email: string) => {
         const user = await prisma.users.findFirst({
