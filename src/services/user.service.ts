@@ -21,29 +21,24 @@ export const userService = {
     },
 
     create: async (userRequest: UserRequest) => {
-        if (userRequest.phone.trim().length !== 10 || isNaN(Number(userRequest.phone))) {
-            throw new Error('Phone must be 10 numeric characters long');
-        }
-
-        if (userRequest.password.trim().length < 8) {
-            throw new Error('Password must be at least 8 characters long');
-        }
-
+       
+        userService.verifyUser(userRequest);
+        
         const existingUser = await prisma.users.findFirst({
             where: {
                 OR: [
-                { email: userRequest.email },
-                { nickname: userRequest.nickname },
-                { phone: userRequest.phone }
+                { email: userRequest.email.trim().toLowerCase() },
+                { nickname: userRequest.nickname.trim() },
+                { phone: userRequest.phone.trim() }
                 ]
             }
         });
         
         if (existingUser) {
-            if (existingUser.email === userRequest.email) {
+            if (existingUser.email === userRequest.email.trim().toLowerCase()) {
                 throw new Error('Email already in use');
             }
-            if (existingUser.nickname === userRequest.nickname) {
+            if (existingUser.nickname === userRequest.nickname.trim()) {
                 throw new Error('Nickname already in use');
             }
             if (existingUser.phone === userRequest.phone) {
@@ -56,6 +51,10 @@ export const userService = {
         const createdUser = await prisma.users.create({
             data: {
                 ...userRequest,
+                name: userRequest.name.trim(),
+                last_name: userRequest.last_name.trim(),
+                nickname: userRequest.nickname.trim(),
+                email: userRequest.email.trim().toLowerCase(),
                 password: hashedPassword
             }
         })
@@ -63,6 +62,7 @@ export const userService = {
     },
 
     update: async (uuid: string, data: any) => {
+        // TODO: manejar validaciones aca
         const updatedUser: UserRequest =  await prisma.users.update({
             where: {
                 uuid: uuid
@@ -88,7 +88,7 @@ export const userService = {
         const hashedPassword = await bcryptPlugin.hashPassword(password);
         const updatedUser: UserRequest =  await prisma.users.update({
             where: {
-                email: email
+                email: email.trim().toLowerCase()
             },
             data: {
                 password: hashedPassword
@@ -133,7 +133,7 @@ export const userService = {
     getUserByEmail: async (email: string) => {
         const user = await prisma.users.findFirst({
             where: {
-            email: email
+            email: email.toLowerCase().trim()
             }
         });
 
@@ -170,6 +170,29 @@ export const userService = {
             phoneVerified: user.phoneVerified,
             avatar: user.avatar
         };
+    },
+    verifyUser: (userRequest: UserRequest) => {
+        if (userRequest?.phone.trim().length !== 10 || isNaN(Number(userRequest.phone))) {
+            throw new Error('Phone must be 10 numeric characters long');
+        }
+
+        if (userRequest?.password.trim().length < 8) {
+            throw new Error('Password must be at least 8 characters long');
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(userRequest?.email.trim())) {
+            throw new Error('Invalid email format');
+        }
+        if (userRequest?.nickname.trim().length < 4) {
+            throw new Error('Nickname must be at least 4 characters long');
+        }
+        if (userRequest?.name.trim().length < 2) {
+            throw new Error('Name must be at least 2 characters long');
+        }
+        if (userRequest?.last_name.trim().length < 2) {
+            throw new Error('Last name must be at least 2 characters long');
+        }
     }
 };
 
