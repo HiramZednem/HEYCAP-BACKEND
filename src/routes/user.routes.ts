@@ -9,5 +9,6 @@ router.post('/', userController.create);
 router.put('/', accessTokenAuth,  userController.update);
 router.delete('/', accessTokenAuth,  userController.delete);
 router.post('/login', userController.login);
+router.patch('/password', userController.updatePassword);
 
 export default router;
