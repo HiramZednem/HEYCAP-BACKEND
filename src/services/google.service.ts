@@ -9,9 +9,9 @@ const radius = 5000;  // Radius in meters (5,000 meters = 5 km)
 export class GoogleService {
     constructor() { }
 
-    public async getNearbyPlaces(lat: string, lng: string, next_page_token: string = '') {
+    public async getNearbyPlaces(lat: string, lng: string, next_page_token: string = '', type: string = '') {
         const location = `${lat},${lng}`;
-        let url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location}&radius=${radius}&pagetoken=${next_page_token}&key=${GOOGLE_KEY}`;
+        let url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location}&radius=${radius}&type=${type}&pagetoken=${next_page_token}&key=${GOOGLE_KEY}`;
 
         try {
             const response = await axios.get(url);
