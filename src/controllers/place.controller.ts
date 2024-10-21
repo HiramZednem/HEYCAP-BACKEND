@@ -14,16 +14,6 @@ export class PlaceController {
         this.googleServices = new GoogleService();
     }
 
-    // public async getPlaces(req: Request, res: Response) {
-    //     try {
-    //         const result = await this.placeServices.getAllPlaces();
-    //         const response = new BaseResponse(result, true, 'Places found');
-    //         res.status(200).json(response.toResponseEntity());
-    //     } catch (error) {
-    //         const response = new BaseResponse({}, false, 'Error getting places');
-    //         res.status(500).json(response.toResponseEntity());
-    //     }
-    // }
 
     // public async getPlacesInOrder(req: Request, res: Response) {
     //     try {
@@ -37,66 +27,23 @@ export class PlaceController {
     //     }
     // }
 
-    // public async getPlaceByiD(req: Request, res: Response) {
-    //     try {
-    //         const { id_place } = req.params;
-    //         const result = await this.placeServices.getPlaceById(parseInt(id_place));
+    public async getPlaceByiD(req: Request, res: Response) {
+        try {
+            const { id_place } = req.params;
+            const result = await this.placeServices.getPlaceById(id_place);
 
-    //         if(!result) {
-    //             const response = new BaseResponse(result, true, 'No places added yet');
-    //             return res.status(200).json(response.toResponseEntity());
-    //         }
-    //         const response = new BaseResponse(result, true, "Place Found");
-    //         res.status(200).json(response.toResponseEntity());
-    //     } catch (error) {
-    //         const response = new BaseResponse({}, false, 'Error getting place');
-    //         res.status(500).json(response.toResponseEntity());
-    //     }
-    // }
+            if(!result) {
+                const response = new BaseResponse(result, true, 'No places added yet');
+                return res.status(200).json(response.toResponseEntity());
+            }
+            const response = new BaseResponse(result, true, "Place Found");
+            res.status(200).json(response.toResponseEntity());
+        } catch (error) {
+            const response = new BaseResponse({}, false, 'Error getting place');
+            res.status(500).json(response.toResponseEntity());
+        }
+    }
 
-    // public async registerPlace(req: Request, res: Response) {
-    //     try {
-    //         const { name } = req.body;
-    //         // const result = await this.placeServices.registerPlace({ name: name});
-    //         // const response = new BaseResponse(result, true, 'Place created');
-    //         // res.status(201).json(response.toResponseEntity());
-    //     } catch (error) {
-    //         console.log(error);
-    //         const response = new BaseResponse(error, false, 'Error creating place');
-    //         res.status(500).json(response.toResponseEntity());
-    //     }
-    // }
-
-    // public async deletePlace(req: Request, res: Response) {
-    //     try {
-    //         const { id_place } = req.params;
-    //         const result = await this.placeServices.deletePlace(parseInt(id_place));
-    //         const response = new BaseResponse(result, true, 'Place deleted');
-    //         res.status(200).json(response.toResponseEntity());
-    //     } catch (error) {
-    //         const response = new BaseResponse({}, false, "Error deleting place");
-    //         res.status(500).json(response.toResponseEntity());
-    //     }
-    // }
-
-    // // by id
-    // public async get(req: Request, res: Response) {
-    //     try {
-    //         const { id_place } = req.params;
-    //         const result = await this.placeServices.getPlaceById(parseInt(id_place));
-
-    //         if(!result) {
-    //             const response = new BaseResponse(result, true, 'No places added yet');
-    //             return res.status(200).json(response.toResponseEntity());
-    //         }
-    //         const response = new BaseResponse(result, true, "Place Found");
-    //         res.status(200).json(response.toResponseEntity());
-    //     } catch (error) {
-    //         const response = new BaseResponse({}, false, 'Error getting place');
-    //         res.status(500).json(response.toResponseEntity());
-    //     }
-
-    // }
 
     public async getNearbyPlaces(req: Request, res: Response) {
         try {
@@ -105,15 +52,28 @@ export class PlaceController {
         // await tokenService.validateToken(accessToken, uuid);
 
         const { lat, lng, next_page_token } = req.body;
+        console.log(next_page_token)
 
-        const places = await this.googleServices.getNearbyPlaces(lat, lng, next_page_token);
-        
-        const response = new BaseResponse(places, true, "Nearby places found");
+        const results = await this.googleServices.getNearbyPlaces(lat, lng, next_page_token);
+
+        if(results && results.places && results.places.length > 0) {
+
+            const googleIds = results.places.map(place => place.google_id);
+
+            const existingGoogleIds = await this.placeServices.filterExistingPlaces(googleIds);
+
+            const newPlaces = results.places.filter(place => !existingGoogleIds.includes(place.google_id));
+
+            if (newPlaces.length > 0) {
+                this.placeServices.createPlaces(newPlaces);
+            }
+        }
+
+        // TODO: De los places que me llegaron, voy a filtrar a los que el usuario les dio like o dislike
+
+        const response = new BaseResponse(results, true, "Nearby places found");
         res.status(200).json(response.toResponseEntity());
-        // recibo mis places
-        // const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location}&radius=${radius}&type=${type}&pagetoken=${next_page_token}&key=${apiKey}`;
-        // de los places que me llegaron los voy a filtrar si existen en mi bd por el google_id
-        // si existe next, si no existe lo guardo en mi bd
+         
 
         // De los places que me llegaron, voy a filtrar si el usuario les dio like o dislike y esos voy a regresar junto con el next page
 
@@ -124,6 +84,7 @@ export class PlaceController {
     }
 
     public async likePlace(req: Request, res: Response) {
+
     }
 
     public async dislikePlace(req: Request, res: Response) {
