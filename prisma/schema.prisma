@@ -25,8 +25,14 @@ model likes {
 
 model places {
   place_id Int        @id @default(autoincrement())
-  uuid     String     @unique @default(dbgenerated("gen_random_uuid()")) @db.VarChar
+  google_id     String     @unique @db.VarChar
   name     String     @db.VarChar
+  photos   String[]   @db.VarChar
+  rating   Decimal    @db.Decimal
+  vicinity String     @db.VarChar
+  lat      Decimal    @db.Decimal
+  lng      Decimal    @db.Decimal
+  
   dislikes dislikes[]
   likes    likes[]
 }
