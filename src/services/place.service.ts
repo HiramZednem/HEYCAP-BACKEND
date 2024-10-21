@@ -19,37 +19,50 @@ type PlacesResponse = {
 export class PlaceService {
     constructor() { }
 
-    // public async getAllPlaces(): Promise<places[]> {
-    //     return await prisma.places.findMany({
-    //         include: {
-    //             dislikes: true,
-    //             likes: true
-    //         }
-    //     });
-    // }
 
-    public async getAllPlaces(): Promise<places[]> {
-        return await prisma.places.findMany({});
+    public async filterExistingPlaces(googleIds: string[]): Promise<string[]> {
+        const existingPlaces = await prisma.places.findMany({
+            where: {
+                google_id: {
+                    in: googleIds,
+                },
+            },
+            select: {
+                google_id: true, 
+            },
+        });
+        return existingPlaces.map(place => place.google_id);  // Devuelve un array con los google_id existentes
     }
 
-    // public async getPlaceById(id_place: number): Promise<places | null> {
-    //     try {
-    //         const place = await prisma.places.findUnique({
-    //             where: {
-    //                 place_id: id_place
-    //             },
-    //             include: {
-    //                 dislikes: true,
-    //                 likes: true
-    //             }
-    //         });
-    //         return place;
-    //     } catch (error) {
-    //         console.error(error);
-    //         throw new Error("Error getting place by id");
-
-    //     }
-    // }
+    public async createPlaces(places: PlaceResponse[]): Promise<Prisma.BatchPayload> {
+        const createdPlaces = await prisma.places.createMany({
+            data: places.map(place => ({
+                google_id: place.google_id,
+                name: place.name,
+                photos: place.photos,
+                rating: place.rating,
+                vicinity: place.vicinity,
+                lat: place.lat,
+                lng: place.lng,
+            })),
+            skipDuplicates: true, // Omite duplicados en caso de que existan
+        });
+            return createdPlaces;
+        }
+    
+    public async getPlaceById(google_id: string): Promise<places | null> {
+        try {
+            const place = await prisma.places.findUnique({
+                where: {
+                    google_id: google_id
+                }
+            });
+            return place;
+        } catch (error) {
+            console.error(error);
+            throw new Error("Error getting place by id");
+        }
+    }
 
     // public async getPlacesByPage(per_page: number, page: number): Promise<PlacesResponse | null> {
     //     const validPage = Math.max(page, 1); // This is to avoid negative pages and make sure that the page is greater than 0
