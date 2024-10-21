@@ -111,9 +111,10 @@ export const notificationController = {
             
 
             if ( await codeService.verifyCode(email, code, type) ) {
-                await userService.updatePassword(email, newPassword);
+                const user = await userService.getUserByEmail(email);
+                const token = await tokenService.createToken(user.uuid);
 
-                const response = new BaseResponse({}, true, 'Password successfully updated');
+                const response = new BaseResponse({token}, true, 'Verification successful. Please proceed to update your password.');
                 res.status(200).json(response.toResponseEntity())
             } else {
                 throw new Error('Error verifying code');

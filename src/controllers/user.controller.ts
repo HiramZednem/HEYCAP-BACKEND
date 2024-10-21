@@ -128,7 +128,27 @@ export const userController = {
                 return res.status(500).json({ error: 'An unexpected error occurred' });
             }
         }
-    }
+    },
+    updatePassword: async (req: Request, res: Response) => {
+        try {
+            const accessToken = req.app.locals.accessToken;
+            const uuid = jwtPlugin.decode(accessToken).uuid;
+            const token = await tokenService.validateToken(accessToken, uuid);
+            const { password } = req.body;
+
+            const user = await userService.getById(uuid);
+
+            const response = await userService.updatePassword(user.email, password);
+            res.status(200).json(response);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                const response = new BaseResponse({}, false, error.message);
+                res.status(500).json(response.toResponseEntity());
+            } else {
+                return res.status(500).json({ error: 'An unexpected error occurred' });
+            }
+        }
+    },
 
 };
 
