@@ -51,10 +51,9 @@ export class PlaceController {
         // const uuid = jwtPlugin.decode(accessToken).uuid;
         // await tokenService.validateToken(accessToken, uuid);
 
-        const { lat, lng, next_page_token } = req.body;
-        console.log(next_page_token)
+        const { lat, lng, next_page_token, type } = req.body;
 
-        const results = await this.googleServices.getNearbyPlaces(lat, lng, next_page_token);
+        const results = await this.googleServices.getNearbyPlaces(lat, lng, next_page_token, type);
 
         if(results && results.places && results.places.length > 0) {
 
