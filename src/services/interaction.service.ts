@@ -1,7 +1,7 @@
 import { dislikes, likes } from "@prisma/client";
 import { prisma } from "../db/db";
 
-export class InteractiveService {
+export class InteractionService {
 
     constructor(){}
 
