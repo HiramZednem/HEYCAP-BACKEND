@@ -54,7 +54,7 @@ export class PlaceController {
             const newPlaces = results.places.filter(place => !existingGoogleIds.includes(place.google_id));
 
             if (newPlaces.length > 0) {
-                this.placeServices.createPlaces(newPlaces);
+                await this.placeServices.createPlaces(newPlaces);
             }
         }
 
