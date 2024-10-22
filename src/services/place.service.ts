@@ -44,6 +44,10 @@ export class PlaceService {
                     google_id: google_id
                 }
             });
+
+            if (!place) {
+                throw new Error("Place not found");
+            }
             return place;
         } catch (error) {
             console.error(error);

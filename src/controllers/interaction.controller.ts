@@ -51,15 +51,8 @@ export class InteractiveController {
             const user = await userService.getById(uuid);
             const place = await this.placeService.getPlaceById(req.params.id_place);
 
-            if (!user) {
-                throw new Error("User not found");
-            }
-            if (!place) {
-                throw new Error("Place not found");
-            }
 
-
-            const result = await this.InteractionService.dislikeMethod(user.user_id, place.place_id);
+            const result = await this.InteractionService.dislikeMethod(user.user_id, place!.place_id);
             const response = new BaseResponse({}, true, "Dislike set");
             res.status(200).json(response.toResponseEntity());
         } catch (error: unknown) {
@@ -70,5 +63,43 @@ export class InteractiveController {
                 return res.status(500).json({ error: 'An unexpected error occurred' });
             }
         }
+    }
+
+    public async getInterractionsByPlace(req: Request, res: Response) {
+        try {
+            const { place_id } = req.params;
+            const place = await this.placeService.getPlaceById(place_id);
+
+            const interactions = await this.InteractionService.getInteractionsByPlaceId(place!.place_id);
+            const response = new BaseResponse(interactions, true, "User interactions retrieved");
+            res.status(200).json(response.toResponseEntity());
+        } catch(error: unknown) {
+            if (error instanceof Error) {
+                const response = new BaseResponse({}, false, error.message);
+                res.status(500).json(response.toResponseEntity());
+            } else {
+                return res.status(500).json({ error: 'An unexpected error occurred' });
+            }
+        }
+    }
+
+    public async getInterractionsByUser(req: Request, res: Response) {
+        try {
+            const { user_id } = req.params;
+            const user = await userService.getById(user_id);
+
+            const interactions = await this.InteractionService.getInteractionsByUserId(user.user_id);
+            const response = new BaseResponse(interactions, true, "User interactions retrieved");
+            res.status(200).json(response.toResponseEntity());
+
+        } catch(error: unknown) {
+            if (error instanceof Error) {
+                const response = new BaseResponse({}, false, error.message);
+                res.status(500).json(response.toResponseEntity());
+            } else {
+                return res.status(500).json({ error: 'An unexpected error occurred' });
+            }
+        }
+
     }
 }

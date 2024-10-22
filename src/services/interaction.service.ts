@@ -73,6 +73,73 @@ export class InteractionService {
         return like;
     }
 
+    public async getInteractionsByUserId(userId: number) {
+        const likes =  await prisma.likes.findMany({
+          where: { user_id: userId },
+          select: {
+            place: {
+                select: {
+                    google_id: true,
+                    name: true,
+                    photos : true,
+                    rating: true,
+                    vicinity: true,
+                    lat: true,
+                    lng: true,
+                }
+            }
+          }
+        });
+
+        const dislikes = await prisma.dislikes.findMany({
+            where: { user_id: userId },
+            select: {
+                place: {
+                    select: {
+                        google_id: true,
+                        name: true,
+                        photos : true,
+                        rating: true,
+                        vicinity: true,
+                        lat: true,
+                        lng: true,
+                    }
+                }
+            }
+        });
+
+        return { likes, dislikes };
+    }
+
+    public async getInteractionsByPlaceId(placeId: number) {
+        const likes =  await prisma.likes.findMany({
+          where: { place_id: placeId },
+          select: {
+            user: {
+                select: {
+                    nickname: true,
+                    avatar: true,
+                }
+            }
+          }});
+
+        const dislikes = await prisma.dislikes.findMany({
+            where: { place_id: placeId },
+            select: {
+                user: {
+                    select: {
+                        nickname: true,
+                        avatar: true,
+                    }
+                }
+            }
+        });
+
+        return { likes, dislikes };
+            
+    }
+    
+
     private async hasUserLikedPlace(user_id: number, place_id: number) {
         const existingLike = await prisma.likes.findFirst({
             where: {
