@@ -13,6 +13,7 @@ model dislikes {
   place_id   Int
   place     places @relation(fields: [place_id], references: [place_id], onDelete: NoAction, onUpdate: NoAction)
   user      users  @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  created_at DateTime @default(now())
 
   @@unique([user_id, place_id])  // Define la clave compuesta
 }
@@ -23,6 +24,7 @@ model likes {
   place_id Int
   place   places @relation(fields: [place_id], references: [place_id], onDelete: NoAction, onUpdate: NoAction)
   user    users  @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  created_at DateTime @default(now())
 
   @@unique([user_id, place_id])  // Define la clave compuesta
 }
