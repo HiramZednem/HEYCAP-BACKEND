@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { PaymentService } from '../services/payment.service';
-import { BaseResponse } from './dtos/base.response';
+
+import { BaseResponse } from '../dtos/base.response';
 
 export class PaymentController {
     private paymentService: PaymentService;
@@ -20,6 +21,7 @@ export class PaymentController {
         } catch (error) {
             const response = new BaseResponse({}, false, 'Error creating product');
             res.status(500).json(response.toResponseEntity());
+
         }
     }
 
@@ -54,4 +56,5 @@ export class PaymentController {
             res.status(500).json(response.toResponseEntity());
         }
     }
+
 }

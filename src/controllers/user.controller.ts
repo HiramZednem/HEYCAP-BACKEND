@@ -1,244 +1,154 @@
-import { Request, response, Response } from 'express';
-import { userService } from '../services';
-import bcrypt, { hash } from 'bcrypt';
-import jwt, { verify } from 'jsonwebtoken';
-import { JWT_KEY, META_KEY, META_URL } from '../config';
-import axios from 'axios';
-import { UserRequest } from './dtos/request/userRequest';
-import { UserResponse } from './dtos/response/userResponse';
-import { BaseResponse } from './dtos/base.response';
+import { Request, Response } from 'express';
+import { notificationService, userService } from '../services';
+import { UserRequest } from '../dtos/request/userRequest';
+import { BaseResponse } from '../dtos/base.response';
+import { jwtPlugin } from '../public/jwt-plugin';
+import { codeService } from '../services/code.service';
+import { CodeType } from '@prisma/client';
+import { tokenService } from '../services/token.service';
 
 export const userController = {
-    getAll: async (req: Request, res: Response) => {
-        try {
-            const users = await userService.getAll();
-            const response = new BaseResponse(users, true, 'All users');
-            res.status(200).json(response.toResponseEntity());
-        } catch (e) {
-            const response = new BaseResponse({}, false, 'Error getting users');
-            res.status(500).json(response.toResponseEntity());
-        }
-    },
     getById: async (req: Request, res: Response) => {
         try {
             const user = await userService.getById(req.params.id);
-            const response = new BaseResponse(user, true, 'User found');
+            const userResponse = userService.toUserResponse(user);
+
+            const response = new BaseResponse(userResponse, true, 'User retrieved successfully');
             res.status(200).json(response.toResponseEntity());
-        } catch (e) {
-            const response = new BaseResponse({}, false, 'Error getting user');
-            res.status(500).json(response.toResponseEntity());
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                const response = new BaseResponse({}, false, error.message);
+                res.status(500).json(response.toResponseEntity());
+            } else {
+                return res.status(500).json({ error: 'An unexpected error occurred' });
+            }
         }
     },
     create: async (req: Request, res: Response) => {
         try {
             const userRequest: UserRequest = req.body;
+            const createdUser = await userService.create(userRequest);
 
-            if (userRequest.phone.trim().length != 10) {
-                return res.status(400).json({ error: 'Phone must be 10 characters long' });
-            }
+            const {code, user} = await codeService.generateCode(createdUser.email, CodeType.VERIFY);
+            await notificationService.sendMetaVerificationCode(user.phone, code.code);
 
-            if (userRequest.password.trim().length < 8) {
-                return res.status(400).json({ error: 'Password must be at least 8 characters long' });
-            }
-
-            const userByEmail = await userService.getUserByEmail(userRequest.email);
-            const userByNickname = await userService.getUserByNickname(userRequest.nickname);
-            const userByPhone = await userService.getUserByPhone(userRequest.phone);
-
-            if (userByEmail) {
-                return res.status(400).json({ error: 'Email already in use' });
-            }
-            if (userByNickname) {
-                return res.status(400).json({ error: 'Nickname already in use' });
-            }
-            if (userByPhone) {
-                return res.status(400).json({ error: 'Phone already in use' });
-            }
-            
-
-            const hashedPassword = await bcrypt.hash(userRequest.password.trim(), 10);
-            const user = await userService.create({...userRequest, password: hashedPassword});
-            const response = new BaseResponse(user, true, 'User created');
+            const token = await tokenService.createToken(user.uuid);
+            const response = new BaseResponse({ token }, true, 'User created successfully. A WhatsApp verification code has been sent. Please use it to verify your account.');
             res.status(201).json(response.toResponseEntity());
-        } catch (e) {
-            const response = new BaseResponse({}, false, 'Error creating user');
-            res.status(500).json(response.toResponseEntity());
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                const response = new BaseResponse({}, false, error.message);
+                res.status(500).json(response.toResponseEntity());
+            } else {
+                return res.status(500).json({ error: 'An unexpected error occurred' });
+            }
         }
     },
     update: async (req: Request, res: Response) => {
         try {
-            const userId = req.params.id;
+            const accessToken = req.app.locals.accessToken;
+            const uuid = jwtPlugin.decode(accessToken).uuid;
+            await tokenService.validateToken(accessToken, uuid);
+
             const userRequest = req.body
 
-            const currentUser = await userService.getById(userId);
+            const currentUser = await userService.getById(uuid);
 
-            if (!currentUser) {
-                return res.status(404).json({ error: 'User not found' });
-            }
-
-            // Validar solo si se está intentando cambiar el email
             if (userRequest.email && userRequest.email !== currentUser.email) {
                 const userByEmail = await userService.getUserByEmail(userRequest.email);
                 if (userByEmail) {
-                    return res.status(400).json({ error: 'Email already in use' });
+                    throw new Error('The provided email is already in use by another account');
                 }
             }
 
-            // Validar solo si se está intentando cambiar el nickname
             if (userRequest.nickname && userRequest.nickname !== currentUser.nickname) {
                 const userByNickname = await userService.getUserByNickname(userRequest.nickname);
                 if (userByNickname) {
-                    return res.status(400).json({ error: 'Nickname already in use' });
+                    throw new Error('The provided nickname is already in use by another account');
                 }
             }
 
-            // Validar solo si se está intentando cambiar el phone
-            if (userRequest.phone && userRequest.phone !== currentUser.phone) {
-                const userByPhone = await userService.getUserByPhone(userRequest.phone);
-                if (userByPhone) {
-                    return res.status(400).json({ error: 'Phone already in use' });
-                }
+            if (userRequest.password) {
+                throw new Error('Password updates are not allowed through this endpoint. Please contact Hiram for further instructions.');
             }
 
-            // Si todas las validaciones pasan, proceder con la actualización
-            const updatedUser = await userService.update(userId, userRequest);
+                // Validate if trying to change restricted properties
+                const restrictedProperties = ['phoneVerified', 'code', 'code_created_at', 'created_at', 'phone','uuid','id'];
+                for (const prop of restrictedProperties) {
+                    if (userRequest[prop] !== undefined) {
+                        throw new Error(`Updates to the property '${prop}' are not allowed`);
+                    }
+                }
+
+            const updatedUser = await userService.update(uuid, userRequest);
             const response = new BaseResponse(updatedUser, true, 'User updated successfully');
             res.status(200).json(response.toResponseEntity());
 
-        } catch (e) {
-            const response = new BaseResponse({}, false, 'Error updating user');
-            res.status(500).json(response.toResponseEntity())
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                const response = new BaseResponse({}, false, error.message);
+                res.status(500).json(response.toResponseEntity());
+            } else {
+                return res.status(500).json({ error: 'An unexpected error occurred' });
+            }
         }
     },
     delete: async (req: Request, res: Response) => {
         try {
-            const user = await userService.delete(req.params.id);
-            if (!user) {
-                return res.status(500).json({error: 'Error deleting user'});
-            }
+            const accessToken = req.app.locals.accessToken;
+            const uuid = jwtPlugin.decode(accessToken).uuid;
+            await tokenService.validateToken(accessToken, uuid);
+
+            const user = await userService.delete(uuid);
 
             const response = new BaseResponse({}, true, 'User deleted successfully');
             res.status(200).json(response.toResponseEntity());
-        } catch (e) {
-            const response = new BaseResponse({}, false, 'Error deleting user');
-            res.status(500).json(response.toResponseEntity());
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                const response = new BaseResponse({}, false, error.message);
+                res.status(500).json(response.toResponseEntity());
+            } else {
+                return res.status(500).json({ error: 'An unexpected error occurred' });
+            }
         }
     },
     login: async (req: Request, res: Response) => {
         try {
             const { email, password } = req.body;
-            
-            const user = await userService.getUserByEmail(email);
-            if (!user) {
-                return res.status(404).json({ error: 'User not found' });
-            }
+            const userResponse = await userService.login(email, password);
 
-            const passwordMatch = await bcrypt.compare(password, user.password);
-            if (!passwordMatch) {
-                return res.status(401).json({ error: 'Invalid password' });
-            }
-
-
-            const token = jwt.sign({ user }, JWT_KEY as string, { expiresIn: "12h" });
-
-            const userResponse = await userService.getById(user.uuid);
-
-            const response = new BaseResponse({ user: userResponse, token }, true, 'User logged in successfully');
+            const token = await tokenService.createToken(userResponse.uuid);
+            const response = new BaseResponse({ token: token }, true, 'User logged in successfully. A verification code has been sent to your WhatsApp. Please use it to continue.');
             res.status(200).json(response.toResponseEntity());
-        } catch (error) {
-            const response = new BaseResponse({}, false, 'Error logging in');
-            res.status(500).json(response.toResponseEntity());
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                const response = new BaseResponse({}, false, error.message);
+                res.status(500).json(response.toResponseEntity());
+            } else {
+                return res.status(500).json({ error: 'An unexpected error occurred' });
+            }
         }
     },
-    verifyNumberPost: async (req: Request, res: Response) => {
+    updatePassword: async (req: Request, res: Response) => {
         try {
-            const user = await userService.getById(req.params.id);
-            if (!user) {
-                return res.status(404).json({ error: 'User not found' });
+            const accessToken = req.app.locals.accessToken;
+            const uuid = jwtPlugin.decode(accessToken).uuid;
+            const token = await tokenService.validateToken(accessToken, uuid);
+            const { password } = req.body;
+
+            const user = await userService.getById(uuid);
+
+            const response = await userService.updatePassword(user.email, password);
+            res.status(200).json(response);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                const response = new BaseResponse({}, false, error.message);
+                res.status(500).json(response.toResponseEntity());
+            } else {
+                return res.status(500).json({ error: 'An unexpected error occurred' });
             }
-
-            if (user?.phone === undefined) {
-                return res.status(404).json({ error: 'Add a phone number first' });
-            }
-
-            if (user?.phoneVerified) {
-                return res.status(400).json({ error: 'Phone already verified' });
-            }
-
-            const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
-            await userService.update(user.uuid, { code: verificationCode, code_created_at: new Date() });
-
-            const response = await axios.post(
-                META_URL!,
-                {
-                    messaging_product: "whatsapp",
-                    recipient_type: "individual",
-                    to: `+52${user.phone}`,
-                    type: "template",
-                    template: {
-                        name: "authentication",
-                        language: {
-                            code: "en_US"
-                        },
-                        components: [
-                            {
-                                type: "body",
-                                parameters: [
-                                    {
-                                        type: "text",
-                                        text: verificationCode
-                                    }
-                                ]
-                            },
-                            {
-                                type: "button",
-                                sub_type: "url",
-                                index: "0",
-                                parameters: [
-                                    {
-                                        type: "text",
-                                        text: verificationCode
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${META_KEY}`  // Token de acceso de Meta
-                    }
-                }
-            );
-            const responseB = new BaseResponse({}, true, 'Message sent');
-            res.status(200).json(responseB.toResponseEntity())
-        } catch (error) {
-            const response = new BaseResponse({}, false, 'Error sending message');
-            res.status(500).json(response.toResponseEntity());
         }
     },
-    verifyNumberGet: async (req: Request, res: Response) => {
-        const userExist = await userService.getById(req.params.id);
-
-        if (!userExist) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        const user = await userService.getUserByEmail(userExist.email);
-
-        if (user?.code === undefined) {
-            return res.status(400).json({ error: 'No se ha iniciado el proceso de verificación' });
-        }
-
-        if (user.code == req.params.code) {
-            await userService.update(user!.uuid, { code: null, code_created_at: new Date() });;
-            const response = new BaseResponse({}, true, 'Number verified');
-            res.status(200).json(response.toResponseEntity())
-        } else {
-            const response = new BaseResponse({}, false, 'Error verifying number');
-            res.status(400).json(response.toResponseEntity())
-        }
-    }
 
 };
+

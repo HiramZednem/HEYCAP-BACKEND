@@ -13,6 +13,8 @@ model dislikes {
   place_id   Int
   place     places @relation(fields: [place_id], references: [place_id], onDelete: NoAction, onUpdate: NoAction)
   user      users  @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([user_id, place_id])  // Define la clave compuesta
 }
 
 model likes {
@@ -21,12 +23,20 @@ model likes {
   place_id Int
   place   places @relation(fields: [place_id], references: [place_id], onDelete: NoAction, onUpdate: NoAction)
   user    users  @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([user_id, place_id])  // Define la clave compuesta
 }
 
 model places {
   place_id Int        @id @default(autoincrement())
-  uuid     String     @unique @default(dbgenerated("gen_random_uuid()")) @db.VarChar
+  google_id     String     @unique @db.VarChar
   name     String     @db.VarChar
+  photos   String[]   @db.VarChar
+  rating   Decimal    @db.Decimal
+  vicinity String     @db.VarChar
+  lat      Decimal    @db.Decimal
+  lng      Decimal    @db.Decimal
+  
   dislikes dislikes[]
   likes    likes[]
 }
@@ -42,12 +52,58 @@ model users {
   phone           String        @unique @db.VarChar(10)
   phoneVerified   Boolean?      @default(false)
   avatar          String?       @db.VarChar
-  code            String?       @db.VarChar(4)
-  code_created_at DateTime?     @default(now()) @db.Timestamp(6)
   created_at      DateTime?     @default(now()) @db.Timestamp(6)
   dislikes        dislikes[]
   itineraries     itineraries[]
   likes           likes[]
+  code            codes?    
+  tokens          tokens[]    
+}
+
+model tokens {
+  token_id      Int              @id @default(autoincrement())
+  valid_at      DateTime?         // la fecha hasta la que esta vigente
+  created_at    DateTime         @default(now()) @db.Timestamp(6)
+  status        TokenStatus      
+
+  // Relación con el modelo "users"
+  user_id       Int
+  user          users            @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  // Relación con el modelo "custom_settings"
+  custom_settings custom_settings[] // Relación uno a muchos con custom_settings
+}
+
+enum TokenStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model custom_settings {
+  key         String   @db.VarChar(255) // aqui ya va el token
+  key_value   String   @db.VarChar(255) // 3m, 1h y asi...
+
+  // Relación con el modelo "tokens"
+  token_id    Int
+  token       tokens   @relation(fields: [token_id], references: [token_id], onDelete: Cascade)
+  
+  @@id([key, token_id])
+}
+
+model codes {
+  code_id        Int      @id @default(autoincrement())
+  code           String   @db.VarChar(4)    // Código numérico o string de 4 caracteres
+  code_type      CodeType // Tipo de código (enum)
+  created_at     DateTime @default(now()) @db.Timestamp(6)
+
+  // Relación con el modelo "users"
+  user           users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  user_id        Int      @unique
+}
+enum CodeType {
+  VERIFY
+  LOGIN
+  RECOVERY
 }
 
 model itineraries {

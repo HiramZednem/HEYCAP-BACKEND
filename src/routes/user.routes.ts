@@ -4,13 +4,11 @@ import { accessTokenAuth } from '../middlewares/jwtAuth';
 
 const router = Router();
 
-router.get('/', accessTokenAuth, userController.getAll);
 router.get('/:id',accessTokenAuth,  userController.getById);
 router.post('/', userController.create);
-router.put('/:id', accessTokenAuth,  userController.update);
-router.delete('/:id', accessTokenAuth,  userController.delete);
+router.put('/', accessTokenAuth,  userController.update);
+router.delete('/', accessTokenAuth,  userController.delete);
 router.post('/login', userController.login);
-router.post('/verifynumber/:id', accessTokenAuth, userController.verifyNumberPost);
-router.get('/verifynumber/:id/:code', accessTokenAuth, userController.verifyNumberGet);
+router.patch('/password', userController.updatePassword);
 
 export default router;
