@@ -2,7 +2,7 @@ import usersRoutes from './user.routes';
 import itineraryRoutes from './itinerary.routes';
 import paymentRoutes from './payment.routes';
 import placeRoutes from './place.routes';
-import interactiveRouter from './interactive.routes';
+import interactionRoutes from './interaction.routes';
 import notificationRoutes from './notification.routes';
 
 
@@ -11,6 +11,6 @@ export const routes = {
     itineraryRoutes,
     paymentRoutes,
     placeRoutes,
-    interactiveRouter,
+    interactionRoutes,
     notificationRoutes
 }

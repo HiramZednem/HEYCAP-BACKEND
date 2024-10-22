@@ -1,17 +1,14 @@
 import { Request, Response } from "express";
-import { InteractiveService } from "../services/interactive.service";
+import { InteractionService, tokenService, PlaceService, userService } from "../services";
 import { BaseResponse } from "../dtos/base.response";
 import { jwtPlugin } from "../public";
-import { tokenService } from "../services/token.service";
-import { userService } from "../services";
-import { PlaceService } from "../services/place.service";
 
 export class InteractiveController {
-    private interactiveService: InteractiveService;
+    private InteractionService: InteractionService;
     private placeService: PlaceService;
 
     constructor(){
-        this.interactiveService = new InteractiveService();
+        this.InteractionService = new InteractionService();
         this.placeService = new PlaceService();
     }
 
@@ -32,7 +29,7 @@ export class InteractiveController {
             }
 
 
-            const result = await this.interactiveService.likeMethod(user.user_id, place.place_id);
+            const result = await this.InteractionService.likeMethod(user.user_id, place.place_id);
             const response = new BaseResponse({}, true, "Like set");
             res.status(200).json(response.toResponseEntity());
         } catch (error: unknown) {
@@ -62,7 +59,7 @@ export class InteractiveController {
             }
 
 
-            const result = await this.interactiveService.dislikeMethod(user.user_id, place.place_id);
+            const result = await this.InteractionService.dislikeMethod(user.user_id, place.place_id);
             const response = new BaseResponse({}, true, "Dislike set");
             res.status(200).json(response.toResponseEntity());
         } catch (error: unknown) {
