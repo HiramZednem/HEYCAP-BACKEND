@@ -15,18 +15,6 @@ export class PlaceController {
     }
 
 
-    // public async getPlacesInOrder(req: Request, res: Response) {
-    //     try {
-    //         const { per_page=9, page=1 } = req.query
-    //         const result = await this.placeServices.getPlacesByPage(parseInt(per_page as string), parseInt(page as string));
-    //         const response = new BaseResponse(result, true, 'Places found');
-    //         res.status(200).json(response.toResponseEntity());
-    //     } catch (error) {
-    //         const response = new BaseResponse({}, false, 'Error getting places per page');
-    //         res.status(500).json(response.toResponseEntity());
-    //     }
-    // }
-
     public async getPlaceByiD(req: Request, res: Response) {
         try {
             const { id_place } = req.params;
@@ -47,9 +35,9 @@ export class PlaceController {
 
     public async getNearbyPlaces(req: Request, res: Response) {
         try {
-        // const accessToken = req.app.locals.accessToken;
-        // const uuid = jwtPlugin.decode(accessToken).uuid;
-        // await tokenService.validateToken(accessToken, uuid);
+        const accessToken = req.app.locals.accessToken;
+        const uuid = jwtPlugin.decode(accessToken).uuid;
+        await tokenService.validateToken(accessToken, uuid);
 
         const { lat, lng, next_page_token, type } = req.body;
 
@@ -80,13 +68,6 @@ export class PlaceController {
 
         }
         
-    }
-
-    public async likePlace(req: Request, res: Response) {
-
-    }
-
-    public async dislikePlace(req: Request, res: Response) {
     }
 
 }

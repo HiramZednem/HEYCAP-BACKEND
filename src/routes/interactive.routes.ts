@@ -4,7 +4,7 @@ import { InteractiveController } from "../controllers/interactive.controller";
 const router = Router();
 const interactiveController = new InteractiveController();
 
-router.post('/like', interactiveController.setLike.bind(interactiveController));
-router.post('/dislike', interactiveController.setDislike.bind(interactiveController));
+router.post('/like/:id_place', interactiveController.setLike.bind(interactiveController));
+router.post('/dislike/:id_place', interactiveController.setDislike.bind(interactiveController));
 
 export default router;
