@@ -4,6 +4,7 @@ import { PORT } from './config'
 import { routes } from './routes'
 import cors from 'cors';
 import { accessTokenAuth } from './middlewares/jwtAuth';
+import rateLimit from 'express-rate-limit';
 
 
 export class Server {
@@ -24,6 +25,14 @@ export class Server {
     this.app.use(morgan('dev'));
     this.app.use(cors());
     this.app.use(express.json());
+
+    const limiter = rateLimit({
+      windowMs: 10 * 60 * 1000, 
+      max: 100, 
+      message: 'Too many requests from this IP, please try again later.'
+    });
+    
+    this.app.use(limiter);
   }
 
   routes(){
