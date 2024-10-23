@@ -48,6 +48,7 @@ export class Server {
     this.app.use('/api/v1/places', accessTokenAuth, routes.placeRoutes);
     this.app.use('/api/v1/interactions', accessTokenAuth, routes.interactionRoutes);
     this.app.use('/api/v1/notifications', routes.notificationRoutes);
+    this.app.use('/api/v1/follows', accessTokenAuth, routes.followRoutes);
 
 
   }
