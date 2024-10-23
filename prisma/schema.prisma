@@ -43,6 +43,17 @@ model places {
   likes    likes[]
 }
 
+model follows {
+  id_follow  Int    @id @default(autoincrement())
+  user_id    Int
+  follow_id  Int
+
+  follower   users  @relation(fields: [user_id], references: [user_id])  // The user who follows
+
+  @@unique([user_id, follow_id])  // Ensure a user can follow another user only once
+}
+
+
 model users {
   user_id         Int           @id @default(autoincrement())
   uuid            String        @unique @default(dbgenerated("gen_random_uuid()")) @db.VarChar
@@ -59,7 +70,9 @@ model users {
   itineraries     itineraries[]
   likes           likes[]
   code            codes?    
-  tokens          tokens[]    
+  tokens          tokens[]   
+  follows         follows[] 
+
 }
 
 model tokens {
