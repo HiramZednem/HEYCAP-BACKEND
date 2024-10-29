@@ -54,6 +54,10 @@ export class GoogleService {
                 responseP.push(placeResponse);
             });
 
+            // De los places que me llegaron, voy a filtrar a los que no tienen foto
+            places.results = places.results.filter(place => place.photos != undefined)
+            console.log(places.results)
+
 
             if(places && places.results && places.results.length > 0) {
 
