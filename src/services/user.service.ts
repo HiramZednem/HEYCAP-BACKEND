@@ -131,7 +131,7 @@ export const userService = {
     },
 
     getUserByEmail: async (email: string) => {
-        const user = await prisma.users.findFirst({
+        const user = await prisma.users.findUnique({
             where: {
             email: email.toLowerCase().trim()
             }
@@ -145,7 +145,7 @@ export const userService = {
     },
 
     getUserByNickname: async (nickname: string) => {
-        return await prisma.users.findFirst({
+        return await prisma.users.findUnique({
             where: {
                 nickname: nickname
             }
@@ -153,7 +153,7 @@ export const userService = {
     },
 
     getUserByPhone: async (phone: string) => {
-        return await prisma.users.findFirst({
+        return await prisma.users.findUnique({
             where: {
                 phone: phone
             }
@@ -193,6 +193,32 @@ export const userService = {
         if (userRequest?.last_name.trim().length < 2) {
             throw new Error('Last name must be at least 2 characters long');
         }
+    },
+    getUserByIdFullUser: async (uuid: string) => {
+        const user = await prisma.users.findUnique({
+            where: {
+                uuid: uuid
+            }
+        });
+
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        return user;
+    },
+    getUserByIdUser: async (user_id: number) => {
+        const user = await prisma.users.findUnique({
+            where: {
+                user_id: user_id
+            }
+        });
+
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        return userService.toUserResponse(user);
     }
 };
 

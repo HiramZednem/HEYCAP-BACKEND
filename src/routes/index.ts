@@ -4,6 +4,7 @@ import paymentRoutes from './payment.routes';
 import placeRoutes from './place.routes';
 import interactionRoutes from './interaction.routes';
 import notificationRoutes from './notification.routes';
+import followRoutes from './follow.routes';
 
 
 export const routes = {
@@ -12,5 +13,6 @@ export const routes = {
     paymentRoutes,
     placeRoutes,
     interactionRoutes,
-    notificationRoutes
+    notificationRoutes,
+    followRoutes
 }

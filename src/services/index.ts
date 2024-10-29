@@ -7,3 +7,4 @@ export { InteractionService } from './interaction.service';
 export { PaymentService } from './payment.service';
 export { PlaceService } from './place.service';
 export { tokenService } from './token.service';
+export { followService } from './follow.service';
