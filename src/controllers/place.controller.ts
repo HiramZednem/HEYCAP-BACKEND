@@ -43,31 +43,11 @@ export class PlaceController {
 
         const { lat, lng, next_page_token, type } = req.body;
 
-        const results = await this.googleServices.getNearbyPlaces(lat, lng, next_page_token, type);
+        const results = await this.googleServices.getNearbyPlaces(lat, lng, next_page_token, type, uuid);
 
-        if(results && results.places && results.places.length > 0) {
+        
 
-            const googleIds = results.places.map(place => place.google_id);
-
-            const existingGoogleIds = await this.placeServices.filterExistingPlaces(googleIds);
-
-            const newPlaces = results.places.filter(place => !existingGoogleIds.includes(place.google_id));
-
-            if (newPlaces.length > 0) {
-                await this.placeServices.createPlaces(newPlaces);
-            }
-        }
-
-        // TODO: De los places que me llegaron, voy a filtrar a los que el usuario les dio like o dislike
-        const user = await userService.getById(uuid);
-        const userInteractions = await this.InteractionService.getInteractionsByUserId(user.user_id);
-
-        let placesVisitedByUser = [
-            ...userInteractions.likes.map(like => like.place.google_id),
-            ...userInteractions.dislikes.map(dislike => dislike.place.google_id)
-        ];
-
-        results!.places = results!.places.filter(place => !placesVisitedByUser.includes(place.google_id));
+        
 
         const response = new BaseResponse(results, true, "Nearby places found");
         res.status(200).json(response.toResponseEntity());
