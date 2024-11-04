@@ -10,6 +10,8 @@ export class InteractionService {
             throw new Error('User has already liked this place');
         }
 
+        this.createView(user_id, place_id);
+
         if (await this.hasUserDislikedPlace(user_id, place_id)) {
             await prisma.dislikes.delete({
                 where: { 
@@ -44,6 +46,8 @@ export class InteractionService {
         if (await this.hasUserDislikedPlace(user_id, place_id)) {
             throw new Error('User has already disliked this place');
         }
+
+        this.createView(user_id, place_id);
 
         if (await this.hasUserLikedPlace(user_id, place_id)) {
             await prisma.likes.delete({
@@ -170,5 +174,34 @@ export class InteractionService {
         } else {
             return false;
         }
+    }
+
+    private async createView(user_id: number, place_id: number) {
+        const existingView = await prisma.views.findFirst({
+            where: {
+            user_id: user_id,
+            place_id: place_id,
+            },
+        });
+
+        if (existingView) {
+            return existingView;
+        }
+
+        const view = await prisma.views.create({
+            data: {
+            place: {
+                connect: {
+                place_id: place_id
+                }
+            },
+            user: {
+                connect: {
+                user_id: user_id
+                }
+            }
+            },
+        });
+        return view;
     }
 }
