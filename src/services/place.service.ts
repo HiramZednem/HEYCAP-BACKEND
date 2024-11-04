@@ -31,6 +31,8 @@ export class PlaceService {
                 vicinity: place.vicinity,
                 lat: place.lat,
                 lng: place.lng,
+                types: place.types,
+                cost: place.cost,
             })),
             skipDuplicates: true, // Omite duplicados en caso de que existan
         });

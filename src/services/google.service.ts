@@ -82,11 +82,13 @@ export class GoogleService {
         return {
             google_id: place.place_id,
             name: place.name,
-            photos: [(place?.photos && place.photos.length > 0) ? this.getPhotoUrl(place.photos[0].photo_reference) : ''],
+            photos: (place?.photos && place.photos.length > 0) ? this.getPhotoUrl(place.photos[0].photo_reference) : '',
             rating: place?.rating ? place.rating : 0,
             vicinity: place.vicinity,
             lat: place.geometry.location.lat,
             lng: place.geometry.location.lng,
+            types: place.types,
+            cost: place.price_level ? place.price_level.toString() : '0'
         };
     }
 

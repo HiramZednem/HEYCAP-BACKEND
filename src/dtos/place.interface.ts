@@ -46,10 +46,11 @@ export interface Photo {
 export interface PlaceResponse {
     google_id: string;
     name: string;
-    photos: string[];
+    photos: string;
     rating: number;
     vicinity: string;
     lat: number;
     lng: number;
     types: string[];
+    cost: string;
 }
