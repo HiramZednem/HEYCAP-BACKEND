@@ -18,6 +18,7 @@ export interface Place {
     types:                 string[];
     vicinity:              string;
     rating?:               number;
+    price_level:           number;
 }
 
 export interface Geometry {
@@ -50,4 +51,5 @@ export interface PlaceResponse {
     vicinity: string;
     lat: number;
     lng: number;
+    types: string[];
 }
