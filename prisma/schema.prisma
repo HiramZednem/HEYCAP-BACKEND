@@ -33,11 +33,13 @@ model places {
   place_id Int        @id @default(autoincrement())
   google_id     String     @unique @db.VarChar
   name     String     @db.VarChar
-  photos   String[]   @db.VarChar
+  photos   String   @db.VarChar
   rating   Decimal    @db.Decimal
   vicinity String     @db.VarChar
   lat      Decimal    @db.Decimal
   lng      Decimal    @db.Decimal
+  types   String[]   @db.VarChar
+  cost    String     @db.VarChar @default("0")
   
   dislikes dislikes[]
   likes    likes[]

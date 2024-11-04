@@ -18,6 +18,7 @@ export interface Place {
     types:                 string[];
     vicinity:              string;
     rating?:               number;
+    price_level:           number;
 }
 
 export interface Geometry {
@@ -45,9 +46,11 @@ export interface Photo {
 export interface PlaceResponse {
     google_id: string;
     name: string;
-    photos: string[];
+    photos: string;
     rating: number;
     vicinity: string;
     lat: number;
     lng: number;
+    types: string[];
+    cost: string;
 }
