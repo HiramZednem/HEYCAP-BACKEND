@@ -25,19 +25,19 @@ export class GoogleService {
         try {
             const response = await axios.get(url);
     
-            const places: DataGoogle = response.data;
-
-            
+            let places: DataGoogle = response.data;
 
 
-            // if (places.results.length === 0 && !places.next_page_token) {
-            //     throw new Error("No new nearby places found that you haven't interacted with.");
-            // }
-            
-
-            // TODO: De los places que me llegaron, voy a filtrar a los que el usuario les dio like o dislike
+            let responseP: PlaceResponse[] = [];
             const user = await userService.getById(user_uuid);
             const userInteractions = await this.interactionService.getInteractionsByUserId(user.user_id);
+
+            
+            
+            if (places.results.length === 0 && !places.next_page_token) {
+                throw new Error("No new nearby places found that you haven't interacted with.");
+            }
+            
 
             let placesVisitedByUser = [
                 ...userInteractions.likes.map(like => like.place.google_id),
@@ -46,19 +46,43 @@ export class GoogleService {
 
             places.results = places.results.filter(place => !placesVisitedByUser.includes(place.place_id));
 
+            // De los places que me llegaron, voy a filtrar a los que no tienen foto
+            places.results = places.results.filter(place => place.photos != undefined)
 
-            let responseP: PlaceResponse[] = [];
 
             places.results.forEach((place: Place) => {
                 const placeResponse = this.to(place);
                 responseP.push(placeResponse);
             });
 
-            // De los places que me llegaron, voy a filtrar a los que no tienen foto
-            places.results = places.results.filter(place => place.photos != undefined)
-            console.log(places.results)
+            while (responseP.length <= 20 && places.next_page_token) {
+                next_page_token = places.next_page_token;
+                const response  = await axios.get(url)
+                        places    = response.data;
+            
+                if (places.results.length === 0 && !places.next_page_token) {
+                    break;
+                }
+                
+
+                let placesVisitedByUser = [
+                    ...userInteractions.likes.map(like => like.place.google_id),
+                    ...userInteractions.dislikes.map(dislike => dislike.place.google_id)
+                ];
+
+                places.results = places.results.filter(place => !placesVisitedByUser.includes(place.place_id));
+
+                // De los places que me llegaron, voy a filtrar a los que no tienen foto
+                places.results = places.results.filter(place => place.photos != undefined)
 
 
+                places.results.forEach((place: Place) => {
+                    const placeResponse = this.to(place);
+                    responseP.push(placeResponse);
+                });
+            }
+
+// se agregan a la bd
             if(places && places.results && places.results.length > 0) {
 
                 const googleIds = places.results.map(place => place.place_id);
@@ -72,7 +96,9 @@ export class GoogleService {
                 }
             }
 
-            return { places: responseP, next_page_token: places.next_page_token };
+
+            responseP = responseP.slice(0, 20);
+            return { places: responseP };
         } catch (error) {
             console.error('Error fetching places:', error);
         }
