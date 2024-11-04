@@ -23,7 +23,7 @@ export class PlaceController {
             const result = await this.placeServices.getPlaceById(id_place);
 
             if(!result) {
-                const response = new BaseResponse(result, true, 'No places added yet');
+                const response = new BaseResponse(result, true, 'place does not exist');
                 return res.status(200).json(response.toResponseEntity());
             }
             const response = new BaseResponse(result, true, "Place Found");

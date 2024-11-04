@@ -54,3 +54,34 @@ export interface PlaceResponse {
     types: string[];
     cost: string;
 }
+
+export interface PlaceDetailResponse {
+    google_id: string;
+    name: string;
+    photos: string[];
+    rating: number;
+    vicinity: string;
+    lat: number;
+    lng: number;
+    types: string[];
+    cost: string;
+}
+
+export interface PlaceDetails {
+    adr_address:           string;
+    formatted_address:     string;
+    geometry:              Geometry;
+    icon:                  string;
+    icon_background_color: string;
+    icon_mask_base_uri:    string;
+    name:                  string;
+    photos:                Photo[];
+    place_id:              string;
+    reference:             string;
+    types:                 string[];
+    url:                   string;
+    utc_offset:            number;
+    vicinity:              string;
+    rating?:               number;
+    price_level?:           number;
+}

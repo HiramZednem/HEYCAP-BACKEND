@@ -29,7 +29,7 @@ export class InteractiveController {
             }
 
 
-            const result = await this.InteractionService.likeMethod(user.user_id, place.place_id);
+            const result = await this.InteractionService.likeMethod(user.user_id, Number(place.google_id));
             const response = new BaseResponse({}, true, "Like set");
             res.status(200).json(response.toResponseEntity());
         } catch (error: unknown) {
@@ -52,7 +52,7 @@ export class InteractiveController {
             const place = await this.placeService.getPlaceById(req.params.id_place);
 
 
-            const result = await this.InteractionService.dislikeMethod(user.user_id, place!.place_id);
+            const result = await this.InteractionService.dislikeMethod(user.user_id, Number( place!.google_id));
             const response = new BaseResponse({}, true, "Dislike set");
             res.status(200).json(response.toResponseEntity());
         } catch (error: unknown) {
@@ -70,7 +70,7 @@ export class InteractiveController {
             const { place_id } = req.params;
             const place = await this.placeService.getPlaceById(place_id);
 
-            const interactions = await this.InteractionService.getInteractionsByPlaceId(place!.place_id);
+            const interactions = await this.InteractionService.getInteractionsByPlaceId(Number(place!.google_id));
             const response = new BaseResponse(interactions, true, "User interactions retrieved");
             res.status(200).json(response.toResponseEntity());
         } catch(error: unknown) {
