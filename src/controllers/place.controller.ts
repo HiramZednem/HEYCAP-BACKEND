@@ -41,9 +41,15 @@ export class PlaceController {
         const uuid = jwtPlugin.decode(accessToken).uuid;
         await tokenService.validateToken(accessToken, uuid);
 
-        const { lat, lng, next_page_token, type } = req.body;
+        const { lat, lng, next_page_token, type } = req.query;
 
-        const results = await this.googleServices.getNearbyPlaces(lat, lng, next_page_token, type, uuid);
+        const results = await this.googleServices.getNearbyPlaces(
+            lat as string, 
+            lng as string, 
+            next_page_token as string, 
+            type as string, 
+            uuid
+        );
 
         
 
