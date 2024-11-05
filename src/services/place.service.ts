@@ -1,7 +1,8 @@
 import { Prisma, places } from "@prisma/client";
 import { prisma } from "../db/db";
-import { PlaceResponse } from "../dtos/place.interface";
-
+import { PlaceDetailResponse, PlaceDetails, PlaceResponse } from "../dtos/place.interface";
+import { GOOGLE_KEY } from "../config";
+import axios from "axios";
 
 export class PlaceService {
     constructor() { }
@@ -39,7 +40,7 @@ export class PlaceService {
             return createdPlaces;
         }
     
-    public async getPlaceById(google_id: string): Promise<places | null> {
+    public async getPlaceById(google_id: string) {
         try {
             const place = await prisma.places.findUnique({
                 where: {
@@ -50,11 +51,33 @@ export class PlaceService {
             if (!place) {
                 throw new Error("Place not found");
             }
-            return place;
+
+            const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.google_id}&key=${GOOGLE_KEY}`;
+            const response = await axios.get(url);
+            const placeDetails: PlaceDetails = response.data.result;
+
+            return this.to(placeDetails);
         } catch (error) {
             console.error(error);
             throw new Error("Error getting place by id");
         }
     }
 
+    private to(place: PlaceDetails): PlaceDetailResponse {
+        return {
+            google_id: place.place_id,
+            name: place.name,
+            photos: place?.photos ? place.photos.map(photo => this.getPhotoUrl(photo.photo_reference)) : [],
+            rating: place?.rating ? place.rating : 0,
+            vicinity: place.vicinity,
+            lat: place.geometry.location.lat,
+            lng: place.geometry.location.lng,
+            types: place.types,
+            cost: place.price_level ? place.price_level.toString() : '0'
+        };
+    }
+
+    private getPhotoUrl(photo_reference: string, maxWidth: number = 400): string {
+        return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxWidth}&photoreference=${photo_reference}&key=${GOOGLE_KEY}`;
+    }
 }

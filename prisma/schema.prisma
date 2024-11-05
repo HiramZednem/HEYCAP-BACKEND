@@ -11,8 +11,8 @@ model dislikes {
   dislike_id Int     @id @default(autoincrement())
   user_id    Int
   place_id   Int
-  place     places @relation(fields: [place_id], references: [place_id], onDelete: NoAction, onUpdate: NoAction)
-  user      users  @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  place     places @relation(fields: [place_id], references: [place_id], onDelete: Cascade, onUpdate: Cascade)
+  user      users  @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
   created_at DateTime @default(now())
 
   @@unique([user_id, place_id])  // Define la clave compuesta
@@ -22,8 +22,19 @@ model likes {
   like_id  Int     @id @default(autoincrement())
   user_id  Int
   place_id Int
-  place   places @relation(fields: [place_id], references: [place_id], onDelete: NoAction, onUpdate: NoAction)
-  user    users  @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  place   places @relation(fields: [place_id], references: [place_id], onDelete: Cascade, onUpdate: Cascade)
+  user    users  @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+  created_at DateTime @default(now())
+
+  @@unique([user_id, place_id])  // Define la clave compuesta
+}
+
+model views {
+  views_id Int     @id @default(autoincrement())
+  user_id   Int
+  place_id  Int
+  place     places @relation(fields: [place_id], references: [place_id], onDelete: Cascade, onUpdate: Cascade)
+  user      users  @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
   created_at DateTime @default(now())
 
   @@unique([user_id, place_id])  // Define la clave compuesta
@@ -43,6 +54,7 @@ model places {
   
   dislikes dislikes[]
   likes    likes[]
+  views    views[]
 }
 
 model follows {
@@ -73,7 +85,8 @@ model users {
   likes           likes[]
   code            codes?    
   tokens          tokens[]   
-  follows         follows[] 
+  follows         follows[]
+  views           views[] 
 
 }
 
