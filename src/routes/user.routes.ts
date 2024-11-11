@@ -4,6 +4,7 @@ import { accessTokenAuth } from '../middlewares/jwtAuth';
 
 const router = Router();
 
+router.get('/search', accessTokenAuth, userController.search);
 router.get('/:id',accessTokenAuth,  userController.getById);
 router.post('/', userController.create);
 router.put('/', accessTokenAuth,  userController.update);

@@ -219,6 +219,20 @@ export const userService = {
         }
 
         return userService.toUserResponse(user);
+    },
+    search: async (query: string) => {
+        const users = await prisma.users.findMany({
+            where: {
+              OR: [
+                { name: { contains: query, mode: 'insensitive' } },
+                { last_name: { contains: query, mode: 'insensitive' } },
+                { nickname: { contains: query, mode: 'insensitive' } },
+              ],
+            },
+          });
+
+        console.log(users);
+        return users.map(user => userService.toUserResponse(user));
     }
 };
 

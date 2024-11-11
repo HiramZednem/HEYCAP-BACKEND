@@ -149,6 +149,26 @@ export const userController = {
             }
         }
     },
+    search: async (req: Request, res: Response) => {
+        try {
+            const accessToken = req.app.locals.accessToken;
+            const uuid = jwtPlugin.decode(accessToken).uuid;
+            await tokenService.validateToken(accessToken, uuid);
+
+            const { text } = req.query;
+            const users = await userService.search(text as string);
+
+            const response = new BaseResponse(users, true, 'Users retrieved successfully');
+            res.status(200).json(response.toResponseEntity());
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                const response = new BaseResponse({}, false, error.message);
+                res.status(500).json(response.toResponseEntity());
+            } else {
+                return res.status(500).json({ error: 'An unexpected error occurred' });
+            }
+        }
+    }
 
 };
 
