@@ -6,7 +6,7 @@ import { InteractionService } from './interaction.service';
 import { PlaceService } from './place.service';
 
 
-const radius = 5000;  // Radius in meters (5,000 meters = 5 km)
+const radius = 10000;  // Radius in meters (5,000 meters = 5 km)
 
 
 export class GoogleService {
@@ -103,7 +103,26 @@ export class GoogleService {
             console.error('Error fetching places:', error);
         }
     }
-    
+   
+    public async searchPlace(lat: string, lng: string, textSearch: string) {
+        const location = `${lat},${lng}`;
+    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?location=${location}&query=${encodeURIComponent(textSearch)}&radius=${radius}&key=${GOOGLE_KEY}`;
+
+    try {
+        const response = await axios.get(url);
+        const places: DataGoogle = response.data;
+
+        // Mapea los resultados a la estructura `PlaceResponse`
+        const responseP: PlaceResponse[] = places.results.map((place: Place) => this.to(place));
+        console.log(responseP);
+        return responseP;
+    } catch (error) {
+        console.error('Error fetching places:', error);
+        throw new Error('Failed to fetch places');
+    }
+
+    }
+
     private to(place: Place): PlaceResponse {
         return {
             google_id: place.place_id,

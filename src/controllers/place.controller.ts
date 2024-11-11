@@ -70,4 +70,23 @@ export class PlaceController {
         
     }
 
+    public async searchPlace(req: Request, res: Response) {
+        try {
+            console.log('searchPlace');
+        const { lat, lng, textSearch } = req.query;
+
+        const query = await this.googleServices.searchPlace(lat as string, lng as string, textSearch as string);
+        const response = new BaseResponse({ query }, true, "Place Found");
+        res.status(200).json(response.toResponseEntity());
+        } catch (error) {
+            if (error instanceof Error) {
+                console.error(error);
+                const response = new BaseResponse({}, false, error.message);
+                res.status(500).json(response.toResponseEntity());
+            } else {
+                return res.status(500).json({ error: 'An unexpected error occurred' });
+            }
+        }
+    }
+
 }
