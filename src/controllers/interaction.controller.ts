@@ -116,7 +116,10 @@ export class InteractiveController {
             const { comment } = req.body;
             
             const result = await this.InteractionService.createComment(user.user_id, place_id, comment);
-            const response = new BaseResponse({}, true, "Comment created");
+            const response = new BaseResponse({comment: {
+                comment: result.comment,
+                stars: result.stars
+            }}, true, "Comment created");
             res.status(200).json(response.toResponseEntity());
         } catch (error: unknown) {
             if (error instanceof Error) {

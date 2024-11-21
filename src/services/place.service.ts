@@ -67,7 +67,7 @@ export class PlaceService {
         return {
             google_id: place.place_id,
             name: place.name,
-            photos: place?.photos ? place.photos.map(photo => this.getPhotoUrl(photo.photo_reference)) : [],
+            photos: place?.photos ? place.photos.slice(0, 4).map(photo => this.getPhotoUrl(photo.photo_reference)) : [],
             rating: place?.rating ? place.rating : 0,
             vicinity: place.vicinity,
             lat: place.geometry.location.lat,
