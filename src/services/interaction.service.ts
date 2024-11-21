@@ -1,6 +1,6 @@
 import { dislikes, likes } from "@prisma/client";
 import { prisma } from "../db/db";
-import { GOOGLE_KEY } from "../config";
+import { GOOGLE_AUTH_URI, GOOGLE_CERT_URL, GOOGLE_CLIENT_CERT_URL, GOOGLE_CLIENT_EMAIL, GOOGLE_CLIENT_ID, GOOGLE_KEY, GOOGLE_PRIVATE_KEY, GOOGLE_PRIVATE_KEY_ID, GOOGLE_PROJECT_ID, GOOGLE_TOKEN_URI } from "../config";
 import axios from "axios";
 import { GoogleAuth } from "google-auth-library";
 
@@ -237,12 +237,22 @@ export class InteractionService {
         const SCOPES = ['https://www.googleapis.com/auth/generative-language'];
 
         const auth = new GoogleAuth({
-            keyFilename: 'credentials.json',
+            credentials: {
+                type: 'service_account',
+                project_id: GOOGLE_PROJECT_ID,
+                private_key_id: GOOGLE_PRIVATE_KEY_ID,
+                private_key: GOOGLE_PRIVATE_KEY,
+                client_email: GOOGLE_CLIENT_EMAIL,
+                client_id: GOOGLE_CLIENT_ID,
+            },
+            
             scopes: SCOPES
         });
     
         const client = await auth.getClient();
+        console.log('Client:', client);
         const accessToken = await client.getAccessToken();
+        console.log('Access Token:', accessToken.token);
         return accessToken.token;
     }
 
