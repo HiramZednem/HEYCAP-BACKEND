@@ -29,7 +29,8 @@ export class InteractiveController {
             }
 
 
-            const result = await this.InteractionService.likeMethod(user.user_id, Number(place.google_id));
+            const place_id = await this.placeService.getIdByGoogleId(place.google_id);
+            const result = await this.InteractionService.likeMethod(user.user_id, place_id);
             const response = new BaseResponse({}, true, "Like set");
             res.status(200).json(response.toResponseEntity());
         } catch (error: unknown) {
@@ -50,9 +51,9 @@ export class InteractiveController {
 
             const user = await userService.getById(uuid);
             const place = await this.placeService.getPlaceById(req.params.id_place);
+            const place_id = await this.placeService.getIdByGoogleId(place!.google_id);
 
-
-            const result = await this.InteractionService.dislikeMethod(user.user_id, Number( place!.google_id));
+            const result = await this.InteractionService.dislikeMethod(user.user_id, place_id);
             const response = new BaseResponse({}, true, "Dislike set");
             res.status(200).json(response.toResponseEntity());
         } catch (error: unknown) {
@@ -101,5 +102,29 @@ export class InteractiveController {
             }
         }
 
+    }
+
+    public async createComment(req: Request, res: Response) {
+        try {
+            const accessToken = req.app.locals.accessToken;
+            const uuid = jwtPlugin.decode(accessToken).uuid;
+            await tokenService.validateToken(accessToken, uuid);
+
+            const user = await userService.getById(uuid);
+            const place_id = await this.placeService.getIdByGoogleId(req.params.place_id);
+
+            const { comment } = req.body;
+            
+            const result = await this.InteractionService.createComment(user.user_id, place_id, comment);
+            const response = new BaseResponse({}, true, "Comment created");
+            res.status(200).json(response.toResponseEntity());
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                const response = new BaseResponse({}, false, error.message);
+                res.status(500).json(response.toResponseEntity());
+            } else {
+                return res.status(500).json({ error: 'An unexpected error occurred' });
+            }
+        }
     }
 }

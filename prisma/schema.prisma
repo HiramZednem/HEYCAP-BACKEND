@@ -29,6 +29,16 @@ model likes {
   @@unique([user_id, place_id])  // Define la clave compuesta
 }
 
+model comments {
+  comment_id Int     @id @default(autoincrement())
+  user_id    Int
+  place_id   Int
+  comment    String  @db.VarChar
+  place      places @relation(fields: [place_id], references: [place_id], onDelete: Cascade, onUpdate: Cascade)
+  user       users  @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+  created_at DateTime @default(now())
+}
+
 model views {
   views_id Int     @id @default(autoincrement())
   user_id   Int
@@ -55,6 +65,7 @@ model places {
   dislikes dislikes[]
   likes    likes[]
   views    views[]
+  comments comments[]
 }
 
 model follows {
@@ -87,7 +98,7 @@ model users {
   tokens          tokens[]   
   follows         follows[]
   views           views[] 
-
+  comments        comments[]
 }
 
 model tokens {

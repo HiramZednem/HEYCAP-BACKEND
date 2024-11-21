@@ -204,4 +204,24 @@ export class InteractionService {
         });
         return view;
     }
+
+    public async createComment(user_id: number, place_id: number, comment: string) {
+        const commentResult = await prisma.comments.create({
+            data: {
+                user: {
+                    connect: {
+                        user_id: user_id
+                    }
+                },
+                place: {
+                    connect: {
+                        place_id: place_id
+                    }
+                },
+                comment: comment,
+            }
+        });
+
+        return commentResult;
+    }
 }

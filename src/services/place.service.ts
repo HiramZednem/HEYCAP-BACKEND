@@ -80,4 +80,18 @@ export class PlaceService {
     private getPhotoUrl(photo_reference: string, maxWidth: number = 400): string {
         return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxWidth}&photoreference=${photo_reference}&key=${GOOGLE_KEY}`;
     }
+
+    public async getIdByGoogleId(google_id: string): Promise<number> {
+        const place = await prisma.places.findUnique({
+            where: {
+                google_id: google_id
+            }
+        });
+
+        if (!place) {
+            throw new Error("Place not found");
+        }
+
+        return place.place_id;
+    }
 }
