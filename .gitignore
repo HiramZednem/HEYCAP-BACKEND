@@ -6,3 +6,4 @@ postgres
 package-lock.json
 .env
 README.md
+credentials.json

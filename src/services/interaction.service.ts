@@ -1,7 +1,13 @@
 import { dislikes, likes } from "@prisma/client";
 import { prisma } from "../db/db";
+import { GOOGLE_KEY } from "../config";
+import axios from "axios";
+import { GoogleAuth } from "google-auth-library";
 
 export class InteractionService {
+
+
+    private API_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
 
     constructor(){}
 
@@ -206,6 +212,7 @@ export class InteractionService {
     }
 
     public async createComment(user_id: number, place_id: number, comment: string) {
+        const polaridad = await this.obtenerPolaridad(comment);
         const commentResult = await prisma.comments.create({
             data: {
                 user: {
@@ -219,9 +226,69 @@ export class InteractionService {
                     }
                 },
                 comment: comment,
+                stars: polaridad
             }
         });
 
         return commentResult;
     }
+
+    private async getAccessToken() {
+        const SCOPES = ['https://www.googleapis.com/auth/generative-language'];
+
+        const auth = new GoogleAuth({
+            keyFilename: 'credentials.json',
+            scopes: SCOPES
+        });
+    
+        const client = await auth.getClient();
+        const accessToken = await client.getAccessToken();
+        return accessToken.token;
+    }
+
+    public async obtenerPolaridad(mensaje: string) {
+        try {
+            const token = await this.getAccessToken();
+            const headers = {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            const prompt = `
+            Analiza este texto: "${mensaje}".
+            Devuelve únicamente numero con este formato para evaluar la polaridad:
+            <un valor entero entre 1 y 5>
+            No des explicaciones ni incluyas texto adicional.`;
+
+
+            const payload = {
+                contents: [
+                    { parts: [{ text: prompt }] }
+                ]
+            };
+    
+            const response = await axios.post(this.API_ENDPOINT, payload, { headers });
+            if (response.status === 200) {
+                const data = response.data;
+                try {
+                    const response = data.candidates[0].content.parts[0].text.trim()
+
+                    const polaridad = Number(response);
+                    if (isNaN(polaridad)) {
+                        return 0;
+                    }
+                    return polaridad;
+                } catch (error) {
+                    return 0;
+                }
+            } else {
+                console.error('Error:', response.status, response.data);
+                return 0;
+            }
+        } catch (error: any) {
+            console.error('Error al enviar el mensaje:', error.message);
+            return 0;
+        }
+    }
+    
 }
