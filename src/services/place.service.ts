@@ -42,24 +42,39 @@ export class PlaceService {
     
     public async getPlaceById(google_id: string) {
         try {
-            const place = await prisma.places.findUnique({
-                where: {
-                    google_id: google_id
-                }
-            });
+            // const place = await prisma.places.findUnique({
+            //     where: {
+            //         google_id: google_id
+            //     }
+            // });
 
-            if (!place) {
-                throw new Error("Place not found");
-            }
+            // if (!place) {
+            //     throw new Error("Place not found");
+            // }
 
-            const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.google_id}&key=${GOOGLE_KEY}`;
+            const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${google_id}&key=${GOOGLE_KEY}`;
             const response = await axios.get(url);
             const placeDetails: PlaceDetails = response.data.result;
+
+            const placeResponse: PlaceResponse = {
+                google_id: placeDetails.place_id,
+                name: placeDetails.name,
+                photos: placeDetails?.photos ? this.getPhotoUrl(placeDetails.photos[0].photo_reference, placeDetails.photos[0].width): '',
+                rating: placeDetails?.rating ? placeDetails.rating : 0,
+                vicinity: placeDetails.vicinity,
+                lat: placeDetails.geometry.location.lat,
+                lng: placeDetails.geometry.location.lng,
+                types: placeDetails.types,
+                cost: placeDetails.price_level ? placeDetails.price_level.toString() : '0'
+            }
+            await this.createPlaces([placeResponse]);
+
+
 
             return this.to(placeDetails);
         } catch (error) {
             console.error(error);
-            throw new Error("Error getting place by id");
+            throw new Error("Place not found");
         }
     }
 
