@@ -31,8 +31,17 @@ export class Server {
       max: 100, 
       message: 'Too many requests from this IP, please try again later.'
     });
-    
+
     this.app.use(limiter);
+
+    const loginLimiter = rateLimit({
+      windowMs: 5 * 60 * 1000, 
+      max: 5, 
+      message: 'Too many login attempts from this IP, please try again later.'
+    });
+
+    this.app.use('/api/v1/users/login', loginLimiter);
+    
   }
 
   routes(){
