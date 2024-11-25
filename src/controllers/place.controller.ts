@@ -21,12 +21,17 @@ export class PlaceController {
         try {
             const { id_place } = req.params;
             const result = await this.placeServices.getPlaceById(id_place);
+            // aqui el pedo es que todo se esta trabajando con la google id, por lo que aqui tengo que sacar el id
+            // de mi bd
+
+            const placeBDID = await this.placeServices.getIdByGoogleId(id_place);
+            const comments = await this.InteractionService.getCommentsByPlaceId(placeBDID);
 
             if(!result) {
                 const response = new BaseResponse(result, true, 'place does not exist');
                 return res.status(200).json(response.toResponseEntity());
             }
-            const response = new BaseResponse(result, true, "Place Found");
+            const response = new BaseResponse({place: result, comments}, true, "Place Found");
             res.status(200).json(response.toResponseEntity());
         } catch (error) {
             const response = new BaseResponse({}, false, 'Error getting place');

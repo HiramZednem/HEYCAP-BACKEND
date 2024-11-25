@@ -256,7 +256,7 @@ export class InteractionService {
         return accessToken.token;
     }
 
-    public async obtenerPolaridad(mensaje: string) {
+    private async obtenerPolaridad(mensaje: string) {
         try {
             const token = await this.getAccessToken();
             const headers = {
@@ -299,6 +299,24 @@ export class InteractionService {
             console.error('Error al enviar el mensaje:', error.message);
             return 0;
         }
+    }
+
+    public async getCommentsByPlaceId(place_id: number) {
+        const comments = await prisma.comments.findMany({
+            where: { place_id: place_id },
+            select: {
+                comment: true,
+                stars: true,
+                user: {
+                    select: {
+                        nickname: true,
+                        avatar: true,
+                    }
+                }
+            }
+        });
+
+        return comments;
     }
     
 }
