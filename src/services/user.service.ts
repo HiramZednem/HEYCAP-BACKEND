@@ -7,7 +7,7 @@ import { codeService } from './code.service';
 import { CodeType } from '@prisma/client';
 
 export const userService = {
-    getById: async (uuid: string) => {
+    getById: async (uuid: string, user_id: number = 0) => {
         const user: UserRequest | null = await prisma.users.findUnique({
             where: {
                 uuid: uuid
@@ -17,7 +17,17 @@ export const userService = {
         if (!user) {
             throw new Error('User not found');
         }
-        return user;
+
+        const following = await prisma.follows.findMany({
+            where: {
+                user_id: user_id
+            }
+        });
+        const userIdsFollowing = following.map(f => f.follow_id);
+
+        return {...user, following: userIdsFollowing.includes(user.user_id)};
+
+
     },
 
     create: async (userRequest: UserRequest) => {
@@ -246,10 +256,6 @@ export const userService = {
 
 
         return usersWithFollowingStatus;
-
-
-        // console.log(users);
-        // return users.map(user => userService.toUserResponse(user));
     }
 };
 

@@ -10,10 +10,15 @@ import { tokenService } from '../services/token.service';
 export const userController = {
     getById: async (req: Request, res: Response) => {
         try {
-            const user = await userService.getById(req.params.id);
+            const accessToken = req.app.locals.accessToken;
+            const uuid = jwtPlugin.decode(accessToken).uuid;
+            await tokenService.validateToken(accessToken, uuid);
+            const currentUser = await userService.getById(uuid, 0);
+
+            const user = await userService.getById(req.params.id, currentUser.user_id);
             const userResponse = userService.toUserResponse(user);
 
-            const response = new BaseResponse(userResponse, true, 'User retrieved successfully');
+            const response = new BaseResponse({...userResponse, following: user.following}, true, 'User retrieved successfully');
             res.status(200).json(response.toResponseEntity());
         } catch (error: unknown) {
             if (error instanceof Error) {
