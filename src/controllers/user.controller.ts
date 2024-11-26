@@ -154,9 +154,11 @@ export const userController = {
             const accessToken = req.app.locals.accessToken;
             const uuid = jwtPlugin.decode(accessToken).uuid;
             await tokenService.validateToken(accessToken, uuid);
+            
+            const user = await userService.getById(uuid);
 
             const { text } = req.query;
-            const users = await userService.search(text as string);
+            const users = await userService.search(text as string, user.user_id);
 
             const response = new BaseResponse(users, true, 'Users retrieved successfully');
             res.status(200).json(response.toResponseEntity());

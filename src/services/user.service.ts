@@ -220,7 +220,7 @@ export const userService = {
 
         return userService.toUserResponse(user);
     },
-    search: async (query: string) => {
+    search: async (query: string, user_id: number) => {
         const users = await prisma.users.findMany({
             where: {
               OR: [
@@ -231,8 +231,25 @@ export const userService = {
             },
           });
 
-        console.log(users);
-        return users.map(user => userService.toUserResponse(user));
+        const following = await prisma.follows.findMany({
+            where: {
+                user_id: user_id
+            }
+        });
+
+        const userIdsFollowing = following.map(f => f.follow_id);
+
+        const usersWithFollowingStatus = users.map(user => ({
+            ...userService.toUserResponse(user),
+            following: userIdsFollowing.includes(user.user_id)
+        }));
+
+
+        return usersWithFollowingStatus;
+
+
+        // console.log(users);
+        // return users.map(user => userService.toUserResponse(user));
     }
 };
 
